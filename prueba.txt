@@ -1,0 +1,42 @@
+include "hola.algo"                             # hay que decidir la extensión
+private include "adios.algo"                    # en este archivo puedes usar los símbolos públicos de una inclusión privada, pero quien te incluya no puede usarlos (private rompe la transitividad)
+
+operator ! prefix as logical_not                # los símbolos que no se pueden usar en los operadores son . , ; " ( ) [ ] { }
+operator ! suffix as factorial                  # un operador se puede definir varias veces, siempre y cuando sea con diferente posición
+operator + infix (left 3) as addition           # para la posición infija, dentro de paréntesis van la asociatividad y la precedencia
+operator ^ infix (right 5) as power 
+private operator + prefix as plus               # los operadores también pueden ser privados
+
+# el lenguaje sólo manejará reales por simplicidad
+# para no meternos en broncas, supondremos que ya están definidas las siguientes funciones
+#   addition de dos operandos
+#   subtraction de dos operandos
+#   product de dos operandos
+#   division de dos operandos
+#   plus de un operando
+#   minus de un operando
+#   assign binario
+# el lenguaje también predefine el símbolo := como operador de asignación que delega a assign
+
+proc f(a, b) {
+   var c := a + b;
+   c := c + 1;
+   return c;
+}
+
+proc fib(n) {
+   if n <= 1 {          # error de compilación: <= no está definido
+      return n;
+   } else {
+      return fib(n - 1) + fib(n - 2);
+   }
+}
+
+private proc g( ) {     # este archivo puede usar los símbolos privados, pero nadie que incluya este archivo puede usarlos
+   return 123.456;          
+}
+
+proc h( ) {
+   return 2 * g( );     # error de compilación: * no está definido
+}
+
