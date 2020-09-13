@@ -1,0 +1,110 @@
+3
+include
+12
+"hola.algo"
+1
+# hay que decidir la extensión
+4
+private
+3
+include
+12
+"adios.algo"
+1
+# en este archivo puedes usar los símbolos públicos de una inclusión privada, pero quien te incluya no puede usarlos (private rompe la transitividad)
+5
+operator
+11
+!
+6
+prefix
+8
+as
+14
+logical_not
+1
+# los símbolos que no se pueden usar en los operadores son . , ; " ( ) [ ] { }
+5
+operator
+11
+!
+6
+suffix
+8
+as
+14
+factorial
+1
+# un operador se puede definir varias veces, siempre y cuando sea con diferente posición
+5
+operator
+11
++
+6
+infix
+9
+(
+7
+left
+13
+3
+10
+)
+8
+as
+14
+addition
+1
+# para la posición infija, dentro de paréntesis van la asociatividad y la precedencia
+5
+operator
+11
+^
+6
+infix
+9
+(
+7
+right
+13
+5
+10
+)
+8
+as
+14
+power
+4
+private
+5
+operator
+11
++
+6
+prefix
+8
+as
+14
+plus
+1
+# los operadores también pueden ser privados
+1
+# el lenguaje sólo manejará reales por simplicidad
+1
+# para no meternos en broncas, supondremos que ya están definidas las siguientes funciones
+1
+#   addition de dos operandos
+1
+#   subtraction de dos operandos
+1
+#   product de dos operandos
+1
+#   division de dos operandos
+1
+#   plus de un operando
+1
+#   minus de un operando
+1
+#   assign binario
+1
+# el lenguaje también predefine el símbolo := como operador de asignación que delega a assign
