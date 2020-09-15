@@ -1,3 +1,8 @@
+#ifndef PRELUDE_PARSER_H
+#define PRELUDE_PARSER_H
+#include<vector>
+#include"prelude_lexer.h"
+
 using it_tok = std::vector<token_anotada>::iterator;
 
 token peek(const it_tok& t) {
@@ -12,26 +17,26 @@ void match(it_tok& t, token type) {
 }
 
 void vis_esp(it_tok& t) {
-	if(peek(t) == PRI_K) {
-		match(t,PRI_K);
+	if(peek(t) == PRIVATE_K) {
+		match(t,PRIVATE_K);
 	}
-	else if(peek(t) == PUB_K) {
-		match(t,PUB_K);
+	else if(peek(t) == PUBLIC_K) {
+		match(t,PUBLIC_K);
 	}
 }
 
 void inc_dec(it_tok& t) {
-	match(t,INC_K);
-	match(t,STR);
-	match(t,NL);
+	match(t,INCLUDE_K);
+	match(t,STRING);
+	match(t,NEW_LINE);
 }
 
 void op_aso_esp(it_tok& t) {
-	if(peek(t) == L_K) {
-		match(t,L_K);
+	if(peek(t) == LEFT_K) {
+		match(t,LEFT_K);
 	}
-	else if(peek(t) == R_K) {
-		match(t,R_K);
+	else if(peek(t) == RIGHT_K) {
+		match(t,RIGHT_K);
 	}
 	else {
 		throw std::make_pair(*t,"Syntax error");
@@ -39,23 +44,23 @@ void op_aso_esp(it_tok& t) {
 }
 
 void op_pre_esp(it_tok& t) {
-	match(t,NUM);
+	match(t,NUMBER);
 }
 
 
 void op_pos_esp(it_tok& t) {
-	if(peek(t) == PRE_K) {
-		match(t,PRE_K);
+	if(peek(t) == PREFIX_K) {
+		match(t,PREFIX_K);
 	}
-	else if(peek(t) == SUF_K) {
-		match(t,SUF_K);
+	else if(peek(t) == SUFFIX_K) {
+		match(t,SUFFIX_K);
 	}
-	else if(peek(t) == INF_K) {
-		match(t,INF_K);
-		match(t,L_PAR);
+	else if(peek(t) == INFIX_K) {
+		match(t,INFIX_K);
+		match(t,LEFT_PARENTESIS);
 		op_aso_esp(t);
 		op_pre_esp(t);
-		match(t,R_PAR);
+		match(t,RIGHT_PARENTESIS);
 	}
 	else {
 		throw std::make_pair(*t,"Syntax error");
@@ -63,42 +68,42 @@ void op_pos_esp(it_tok& t) {
 }
 
 void op_dec(it_tok& t) {
-	match(t,OP_K);
-	match(t,OP);
+	match(t,OPERATOR_K);
+	match(t,OPERATOR);
 	op_pos_esp(t);
 	match(t,AS_K);
-	match(t,ID);
-	match(t,NL);
+	match(t,IDENTIFIER);
+	match(t,NEW_LINE);
 }
 
 void inc_head(it_tok& t) {
-	if(peek(t) == PRI_K || peek(t) == PUB_K) {
+	if(peek(t) == PRIVATE_K || peek(t) == PUBLIC_K) {
 		vis_esp(t);
 		inc_dec(t);
 		inc_head(t);
 	}
-	else if(peek(t) == INC_K) {
+	else if(peek(t) == INCLUDE_K) {
 		inc_dec(t);
 		inc_head(t);
 	}
-	else if(peek(t) == NL) {
-		match(t,NL);
+	else if(peek(t) == NEW_LINE) {
+		match(t,NEW_LINE);
 		inc_head(t);
 	}
 }
 
 void op_head(it_tok& t) {
-	if(peek(t) == PRI_K || peek(t) == PUB_K) {
+	if(peek(t) == PRIVATE_K || peek(t) == PUBLIC_K) {
 		vis_esp(t);
 		op_dec(t);
 		op_head(t);
 	}
-	else if(peek(t) == OP_K) {
+	else if(peek(t) == OPERATOR_K) {
 		op_dec(t);
 		op_head(t);
 	}
-	else if(peek(t) == NL) {
-		match(t,NL);
+	else if(peek(t) == NEW_LINE) {
+		match(t,NEW_LINE);
 		op_head(t);
 	}
 }
@@ -107,3 +112,5 @@ void header(it_tok& t) {
 	inc_head(t);
 	op_head(t);
 }
+
+#endif

@@ -1,23 +1,28 @@
+#ifndef PRELUDE_LEXER_H
+#define PRELUDE_LEXER_H
+#include<re2/re2.h>
+#include<re2/stringpiece.h>
+
 enum token {
-	NL,
-	EOI,	
-	INC_K,
-	OP_K,
-	PRI_K,
-	PUB_K,
-	INF_K,
-	SUF_K,
-	PRE_K,
-	L_K,
-	R_K,
+	NEW_LINE,
+	END_OF_INPUT,	
+	INCLUDE_K,
+	OPERATOR_K,
+	PRIVATE_K,
+	PUBLIC_K,
+	INFIX_K,
+	SUFFIX_K,
+	PREFIX_K,
+	LEFT_K,
+	RIGHT_K,
 	AS_K,		
-	L_PAR,
-	R_PAR,
-	OP,
-	STR,	
-	NUM,
-	ID,
-	UK
+	LEFT_PARENTESIS,
+	RIGHT_PARENTESIS,
+	OPERATOR,
+	STRING,	
+	NUMBER,
+	IDENTIFIER,
+	UNKNOWN
 };
 
 struct token_anotada {
@@ -29,27 +34,29 @@ std::vector<token_anotada> prelude_lexer(const char*& ini) {
 	re2::StringPiece input( ini );
 	const RE2 e("[\\t\\f\\r ]*(?:(?:(?:(?://|#)[^\\n]*|/\\*.*?\\*/)?(\\n))+|(proc)|(include)|(operator)|(private)|(public)|(infix)|(suffix)|(prefix)|(left)|(right)|(as)|([(])|([)])|([!+\\-*/.^])|(\".*?\")|(\\d+\\.?\\d*)|(\\w+)|(\\S*))");
 
-	re2::StringPiece mt[UK - NL + 1];
-	RE2::Arg args[UK - NL + 1];
-	const RE2::Arg* m[UK - NL + 1];
-	for( unsigned i = 0; i <= UK - NL; ++i ) {
+	re2::StringPiece mt[UNKNOWN - NEW_LINE + 1];
+	RE2::Arg args[UNKNOWN - NEW_LINE + 1];
+	const RE2::Arg* m[UNKNOWN - NEW_LINE + 1];
+	for( unsigned i = 0; i <= UNKNOWN - NEW_LINE; ++i ) {
 		args[i] = mt + i;
 		m[i] = args + i;
 	}
 
 	std::vector<token_anotada> tokens;
-	while( RE2::FindAndConsumeN(&input, e, m, UK - NL + 1) && mt[EOI - NL].empty() ) {
-		for( unsigned i = 0; i < UK - NL; ++i ) {
+	while( RE2::FindAndConsumeN(&input, e, m, UNKNOWN - NEW_LINE + 1) && mt[END_OF_INPUT - NEW_LINE].empty() ) {
+		for( unsigned i = 0; i < UNKNOWN - NEW_LINE; ++i ) {
 			if( !mt[i].empty() ) {
-				tokens.push_back( { (token)(NL + i), std::string_view( mt[i].data(), mt[i].length() ) } );
+				tokens.push_back( { (token)(NEW_LINE + i), std::string_view( mt[i].data(), mt[i].length() ) } );
 				mt[i].remove_suffix(mt[i].length());
 			}
 		}
-		if(!mt[UK - NL].empty()) {
-			throw std::make_pair( mt[UK - NL], "Lexic Error" );
+		if(!mt[UNKNOWN - NEW_LINE].empty()) {
+			throw std::make_pair( mt[UNKNOWN - NEW_LINE], "Lexic Error" );
 		}
 	}
-	ini = input.data() - mt[EOI - NL].length();
+	ini = input.data() - mt[END_OF_INPUT - NEW_LINE].length();
 	return tokens;
 }
+
+#endif
 
