@@ -1,1 +1,0 @@
-Error al abrir el archivo "prueba.tx": filesystem error: cannot get file size: No such file or directory [prueba.tx]
