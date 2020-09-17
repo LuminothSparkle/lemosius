@@ -5,7 +5,7 @@
 #include<utility>
 #include<string>
 #include"lexer.h"
-#include"parser.h"
+#include"parser_.h"
 #include"inout.h"
 #include"error_handling.h"
 
@@ -21,8 +21,8 @@ try {
            std::cout << token.type << "\n";
            std::cout << token.original << "\n";
        }
-       auto it_tok = tokens.begin();
-       header(it_tok);
+       auto it_tok = tokens.data();
+       auto arbol = parser1(it_tok);
     }
     catch(const std::pair<token, const char*>& e) {
         error_report(std::cout, text.c_str(), text.c_str() + text.length(), e);
