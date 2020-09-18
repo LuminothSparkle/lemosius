@@ -31,7 +31,7 @@ proc f(a, b) {
 }
 
 proc fib(n) {
-   if n <= 1 {          ## error de compilación: <= no está definido
+   if(n <= 1) {          ## error de compilación: <= no está definido
       return n;
    } else {
       return fib(n - 1) + fib(n - 2);

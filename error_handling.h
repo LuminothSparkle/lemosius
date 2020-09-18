@@ -13,11 +13,11 @@ unsigned line_off(const char* ini, const token& t) {
 }
 
 unsigned col_off(const char* ini, const token& t) {
-    return 1 + (t.original.data() - std::find(std::reverse_iterator(t.original.data()), std::reverse_iterator(ini), '\n').base( ));
+    return 1 + (t.original.data() - std::find(std::reverse_iterator(t.original.data( )), std::reverse_iterator(ini), '\n').base( ));
 }
 
 std::string_view view_off(const token& t, int len, const char* fin) {
-    return { t.original.data(), std::size_t(std::find(t.original.data(), (fin - t.original.data() <= len ? fin : t.original.data() + len), '\n') - t.original.data()) };
+    return { t.original.data( ), std::size_t(std::find(t.original.data( ), (fin - t.original.data( ) <= len ? fin : t.original.data( ) + len), '\n') - t.original.data( )) };
 }
 
 void error_report(std::ostream& os, const char* ini, const char* fin, const std::pair<token, const char*>& e) {

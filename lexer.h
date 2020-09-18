@@ -1,20 +1,24 @@
 #ifndef LEXER_H
 #define LEXER_H
-#include<re2/re2.h>
-#include<re2/stringpiece.h>
+
+#include<cstddef>
+
 #include<algorithm>
 #include<utility>
 #include<string_view>
 #include<string>
 #include<vector>
 #include<array>
-#include<cstddef>
+
+#include<re2/re2.h>
+#include<re2/stringpiece.h>
+
 #include"token.h"
 
 //Crei que seria mas conveniente tener un lexer como estructura o clase ya que se modificaran sus valores las formas de tokens para los analisis posterior.
 struct lexer {
     //Considere que no era necesario tener una estructura con los dos datos, creo que solo basta tener las caras, al final nunca buscaremos al reves de caras hacia tipos de tokens.
-    std::array<std::vector<std::string>, END_OF_INPUT + 1> token_forms;
+    std::array<std::vector<std::string>, END_OF_INPUT> token_forms;
 
     RE2 generate_expresion( ) const {
         //Join que junta una cadena de strings agregandole un separado un prefijo y un sufijo
@@ -36,30 +40,31 @@ struct lexer {
     std::vector<token> analisis(const char*& ini, token_type stop) const  {
         RE2 e = generate_expresion( ); //Genero la expresion cada que se llama el analisis, podria cambiar eso pero creo que la cadena va a cambiar dado que agregaremos caras o formas a los tokens.
         re2::StringPiece input( ini );
-        std::array< re2::StringPiece, END_OF_INPUT + 1 > mt;
-        std::array< RE2::Arg, END_OF_INPUT + 1 > args;
-        std::array< const RE2::Arg*, END_OF_INPUT + 1 > m;
+        std::array< re2::StringPiece, END_OF_INPUT > mt;
+        std::array< RE2::Arg, END_OF_INPUT > args;
+        std::array< const RE2::Arg*, END_OF_INPUT > m;
         std::transform(mt.begin( ), mt.end( ), args.begin( ), [&](re2::StringPiece& s){return &s;});
         std::transform(args.begin( ), args.end( ), m.begin( ), [&](RE2::Arg& a){return &a;});
         std::vector<token> tokens;
-        do {
+        while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
                 //Aqui solo entra si no llega coincidir ninguna de las cadenas y lanzo un UNKNOWN
                 throw std::make_pair( 
-                        token( { UNKNOWN, {input.data( ),input.length( )} } ),
+                        token{ UNKNOWN, {input.data( ),input.length( )} },
                         "Lexic Error"
                       );
             }
+            //El porque daba igual END_OF_INPUT es aqui, porque al se un caracter vacio simplemente se tomaba como vacia y no podia hacer distincion de ella y de los comentarios aun si los comentarios no se capturaban
             token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[&](const re2::StringPiece& s){
                 return !s.empty( );
             }) - mt.begin( ));
             //Dado que no queria agregar los comentarios y los espacios como tokens, el regex si acepta las cadenas pero el todos los tokens estan vacios por lo que agregue estas condiciones además de que para que pare el ciclo el token de parada no debe estar vacio.
-            if(type <= END_OF_INPUT && type != stop) {
+            if(type < END_OF_INPUT && type != stop) {
                 tokens.push_back( { type, {mt[type].data( ), mt[type].length()} } );
-                mt[type].remove_suffix(mt[type].length( ));
             }
-        }while( mt[stop].empty( ) );
-        tokens.push_back( { END_OF_INPUT, {mt[stop].data( ), mt[stop].length()} } ); //Agrego un end of input sin importar cual sea el token de parada, supongo que pueden ayudar para el parser que siempre sea end of input el ultimo token
+        }
+        //Mejor agrego un END_OF_INPUT al final cuando llego al token de parada o se acaba la entrada.
+        tokens.push_back( { END_OF_INPUT, {mt[stop].data( ), mt[stop].length()} } ); 
         ini = input.data( ) - mt[stop].length( );
         return tokens;
     }
@@ -82,6 +87,8 @@ struct lexer {
         token_forms[PROC_K] =         { RE2::QuoteMeta("proc") };
         token_forms[VAR_K] =          { RE2::QuoteMeta("var") };
         token_forms[RETURN_K] =       { RE2::QuoteMeta("return") };
+        token_forms[IF_K] =           { RE2::QuoteMeta("if") };
+        token_forms[ELSE_K] =         { RE2::QuoteMeta("else") };
         token_forms[LPARENTHESIS_P] = { RE2::QuoteMeta("(") };
         token_forms[RPARENTHESIS_P] = { RE2::QuoteMeta(")") };
         token_forms[LBRACE_P] =       { RE2::QuoteMeta("{") };
@@ -93,7 +100,7 @@ struct lexer {
         token_forms[STRING_L] =       { R"(\"[^\"]*\")" };
         token_forms[OPERATOR_L] =     { R"([)" + RE2::QuoteMeta(R"(!#$%&'*+-./:<=>?@\^`|~)") + R"(]+)" };
         token_forms[IDENTIFIER_L] =   { R"(\w+)" };
-        token_forms[END_OF_INPUT] =   { R"(\x00)" }; //Faltaba un 0, si compilaba pero no mandaba error al crear la cadena
+        //Asi como estaba el codigo daba igual si existia END_OF_INPUT y de hecho no hacia diferencia incluyendolo, creo que es mejor si lo quito y es más un tipo de token especial para denotar el final sin importar su representacion.
     }
 
 };

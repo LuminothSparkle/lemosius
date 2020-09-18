@@ -1,114 +1,195 @@
-2
-include
-21
-"hola.algo"
-18
-;
-1
-private
-2
-include
-21
-"adios.algo"
-18
-;
-3
-operator
-22
-!
-4
-prefix
-9
-as
-23
-logical_not
-18
-;
-3
-operator
-22
-!
-5
-suffix
-9
-as
-23
-factorial
-18
-;
-3
-operator
-22
-+
-6
-infix
-13
-(
-7
-left
-20
-3
-14
-)
-9
-as
-23
-addition
-18
-;
-3
-operator
-22
-^
-6
-infix
-13
-(
-8
-right
-20
-5
-14
-)
-9
-as
-23
-power
-18
-;
-3
-operator
-22
-#
-6
-infix
-13
-(
-8
-right
-20
-4
-14
-)
-9
-as
-23
-something
-18
-;
-1
-private
-3
-operator
-22
-+
-4
-prefix
-9
-as
-23
-plus
-18
-;
-24
-proc
+include : 2
+"hola.algo" : 23
+; : 20
+private : 1
+include : 2
+"adios.algo" : 23
+; : 20
+operator : 3
+! : 24
+prefix : 4
+as : 9
+logical_not : 25
+; : 20
+operator : 3
+! : 24
+suffix : 5
+as : 9
+factorial : 25
+; : 20
+operator : 3
++ : 24
+infix : 6
+( : 15
+left : 7
+3 : 22
+) : 16
+as : 9
+addition : 25
+; : 20
+operator : 3
+^ : 24
+infix : 6
+( : 15
+right : 8
+5 : 22
+) : 16
+as : 9
+power : 25
+; : 20
+operator : 3
+# : 24
+infix : 6
+( : 15
+right : 8
+4 : 22
+) : 16
+as : 9
+something : 25
+; : 20
+private : 1
+operator : 3
++ : 24
+prefix : 4
+as : 9
+plus : 25
+; : 20
+proc : 26
+
+includes
+
+visibility: nullptr
+file_name: "hola.algo"
+
+visibility: private
+file_name: "adios.algo"
+
+operators
+
+visibility: nullptr
+symbol: !
+position: prefix
+asociativity: nullptr
+precedence: nullptr
+function: logical_not
+
+visibility: nullptr
+symbol: !
+position: suffix
+asociativity: nullptr
+precedence: nullptr
+function: factorial
+
+visibility: nullptr
+symbol: +
+position: infix
+asociativity: left
+precedence: 3
+function: addition
+
+visibility: nullptr
+symbol: ^
+position: infix
+asociativity: right
+precedence: 5
+function: power
+
+visibility: nullptr
+symbol: #
+position: infix
+asociativity: right
+precedence: 4
+function: something
+
+visibility: private
+symbol: +
+position: prefix
+asociativity: nullptr
+precedence: nullptr
+function: plus
+
+proc : 10
+f : 25
+( : 15
+a : 25
+, : 19
+b : 25
+) : 16
+{ : 17
+var : 11
+c : 25
+:= : 21
+a : 25
++ : 24
+b : 25
+; : 20
+c : 25
+:= : 21
+c : 25
++ : 24
+1 : 22
+; : 20
+return : 12
+c : 25
+; : 20
+} : 18
+proc : 10
+fib : 25
+( : 15
+n : 25
+) : 16
+{ : 17
+if : 13
+( : 15
+n : 25
+<= : 24
+1 : 22
+) : 16
+{ : 17
+return : 12
+n : 25
+; : 20
+} : 18
+else : 14
+{ : 17
+return : 12
+fib : 25
+( : 15
+n : 25
+- : 24
+1 : 22
+) : 16
++ : 24
+fib : 25
+( : 15
+n : 25
+- : 24
+2 : 22
+) : 16
+; : 20
+} : 18
+} : 18
+private : 1
+proc : 10
+g : 25
+( : 15
+) : 16
+{ : 17
+return : 12
+123.456 : 22
+; : 20
+} : 18
+proc : 10
+h : 25
+( : 15
+) : 16
+{ : 17
+return : 12
+2 : 22
+* : 24
+g : 25
+( : 15
+) : 16
+; : 20
+} : 18
+ : 26

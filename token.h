@@ -1,5 +1,6 @@
 #ifndef TOKEN_H
 #define TOKEN_H
+
 #include<string>
 #include<string_view>
 
@@ -18,6 +19,8 @@ enum token_type {
     PROC_K,
     VAR_K,
     RETURN_K,
+    IF_K,
+    ELSE_K,
     LPARENTHESIS_P,      // _P de puntuación
     RPARENTHESIS_P,
     LBRACE_P,
