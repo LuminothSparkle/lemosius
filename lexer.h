@@ -15,13 +15,10 @@
 
 #include"token.h"
 
-//Crei que seria mas conveniente tener un lexer como estructura o clase ya que se modificaran sus valores las formas de tokens para los analisis posterior.
 struct lexer {
-    //Considere que no era necesario tener una estructura con los dos datos, creo que solo basta tener las caras, al final nunca buscaremos al reves de caras hacia tipos de tokens.
     std::array<std::vector<std::string>, END_OF_INPUT> token_forms;
 
     RE2 generate_expresion( ) const {
-        //Join que junta una cadena de strings agregandole un separado un prefijo y un sufijo
         auto join = [&](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
             std::string res = prefix;
             for (std::size_t i = 0; i < v.size( ); ++i) {
@@ -30,7 +27,7 @@ struct lexer {
             return res;
         };
         std::vector<std::string> parts(token_forms.size( ) + 1);
-        parts[0] = R"(\s+|\#\#\#[^\#]*\#\#\#|\#\#[^\#\n]*)"; //Dado que # lo queremos considerar como operador al menos, utilizo ## y ### para los comentarios, dudo que se lleguen a usar como operadores así pero no se que opines.
+        parts[0] = R"(\s+|\#\#\#[^\#]*\#\#\#|\#\#[^\#\n]*)";
         std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,[&](const std::vector<std::string>& t) {
             return join(t,"|","(",")");
         });
@@ -38,8 +35,9 @@ struct lexer {
     }
 
     std::vector<token> analisis(const char*& ini, token_type stop) const  {
-        RE2 e = generate_expresion( ); //Genero la expresion cada que se llama el analisis, podria cambiar eso pero creo que la cadena va a cambiar dado que agregaremos caras o formas a los tokens.
+        RE2 e = generate_expresion( );
         re2::StringPiece input( ini );
+        
         std::array< re2::StringPiece, END_OF_INPUT > mt;
         std::array< RE2::Arg, END_OF_INPUT > args;
         std::array< const RE2::Arg*, END_OF_INPUT > m;
@@ -48,24 +46,23 @@ struct lexer {
         std::vector<token> tokens;
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
-                //Aqui solo entra si no llega coincidir ninguna de las cadenas y lanzo un UNKNOWN
                 throw std::make_pair( 
                         token{ UNKNOWN, {input.data( ),input.length( )} },
                         "Lexic Error"
                       );
             }
-            //El porque daba igual END_OF_INPUT es aqui, porque al se un caracter vacio simplemente se tomaba como vacia y no podia hacer distincion de ella y de los comentarios aun si los comentarios no se capturaban
             token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[&](const re2::StringPiece& s){
                 return !s.empty( );
             }) - mt.begin( ));
-            //Dado que no queria agregar los comentarios y los espacios como tokens, el regex si acepta las cadenas pero el todos los tokens estan vacios por lo que agregue estas condiciones además de que para que pare el ciclo el token de parada no debe estar vacio.
             if(type < END_OF_INPUT && type != stop) {
                 tokens.push_back( { type, {mt[type].data( ), mt[type].length()} } );
             }
         }
-        //Mejor agrego un END_OF_INPUT al final cuando llego al token de parada o se acaba la entrada.
-        tokens.push_back( { END_OF_INPUT, {mt[stop].data( ), mt[stop].length()} } ); 
-        ini = input.data( ) - mt[stop].length( );
+        
+        auto len = (stop != END_OF_INPUT ? mt[stop].length( ) : 0);
+        ini = input.data( ) - len;
+        tokens.push_back( { END_OF_INPUT, {ini, len} } ); 
+        
         return tokens;
     }
 
@@ -100,7 +97,6 @@ struct lexer {
         token_forms[STRING_L] =       { R"(\"[^\"]*\")" };
         token_forms[OPERATOR_L] =     { R"([)" + RE2::QuoteMeta(R"(!#$%&'*+-./:<=>?@\^`|~)") + R"(]+)" };
         token_forms[IDENTIFIER_L] =   { R"(\w+)" };
-        //Asi como estaba el codigo daba igual si existia END_OF_INPUT y de hecho no hacia diferencia incluyendolo, creo que es mejor si lo quito y es más un tipo de token especial para denotar el final sin importar su representacion.
     }
 
 };

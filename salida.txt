@@ -1,195 +1,193 @@
-include : 2
-"hola.algo" : 23
-; : 20
-private : 1
-include : 2
-"adios.algo" : 23
-; : 20
-operator : 3
-! : 24
-prefix : 4
-as : 9
-logical_not : 25
-; : 20
-operator : 3
-! : 24
-suffix : 5
-as : 9
-factorial : 25
-; : 20
-operator : 3
-+ : 24
-infix : 6
-( : 15
-left : 7
-3 : 22
-) : 16
-as : 9
-addition : 25
-; : 20
-operator : 3
-^ : 24
-infix : 6
-( : 15
-right : 8
-5 : 22
-) : 16
-as : 9
-power : 25
-; : 20
-operator : 3
-# : 24
-infix : 6
-( : 15
-right : 8
-4 : 22
-) : 16
-as : 9
-something : 25
-; : 20
-private : 1
-operator : 3
-+ : 24
-prefix : 4
-as : 9
-plus : 25
-; : 20
-proc : 26
+Token.type:INCLUDE_K	Token.original: include
+Token.type:STRING_L	Token.original: "hola.algo"
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:PRIVATE_K	Token.original: private
+Token.type:INCLUDE_K	Token.original: include
+Token.type:STRING_L	Token.original: "adios.algo"
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: !
+Token.type:PREFIX_K	Token.original: prefix
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: logical_not
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: !
+Token.type:SUFFIX_K	Token.original: suffix
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: factorial
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: +
+Token.type:INFIX_K	Token.original: infix
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:LEFT_K	Token.original: left
+Token.type:NUMBER_L	Token.original: 3
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: addition
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: ^
+Token.type:INFIX_K	Token.original: infix
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:RIGHT_K	Token.original: right
+Token.type:NUMBER_L	Token.original: 5
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: power
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: #
+Token.type:INFIX_K	Token.original: infix
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:RIGHT_K	Token.original: right
+Token.type:NUMBER_L	Token.original: 4
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: something
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:PRIVATE_K	Token.original: private
+Token.type:OPERATOR_K	Token.original: operator
+Token.type:OPERATOR_L	Token.original: +
+Token.type:PREFIX_K	Token.original: prefix
+Token.type:AS_K	Token.original: as
+Token.type:IDENTIFIER_L	Token.original: plus
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:END_OF_INPUT	Token.original: proc
 
-includes
-
+include_declaration:
 visibility: nullptr
-file_name: "hola.algo"
-
-visibility: private
-file_name: "adios.algo"
-
-operators
-
+file_name: Token.type:STRING_L	Token.original: "hola.algo"
+include_declaration:
+visibility: Token.type:PRIVATE_K	Token.original: private
+file_name: Token.type:STRING_L	Token.original: "adios.algo"
+operator_declaration:
 visibility: nullptr
-symbol: !
-position: prefix
+symbol: Token.type:OPERATOR_L	Token.original: !
+position: Token.type:PREFIX_K	Token.original: prefix
 asociativity: nullptr
 precedence: nullptr
-function: logical_not
-
+function: Token.type:IDENTIFIER_L	Token.original: logical_not
+operator_declaration:
 visibility: nullptr
-symbol: !
-position: suffix
+symbol: Token.type:OPERATOR_L	Token.original: !
+position: Token.type:SUFFIX_K	Token.original: suffix
 asociativity: nullptr
 precedence: nullptr
-function: factorial
-
+function: Token.type:IDENTIFIER_L	Token.original: factorial
+operator_declaration:
 visibility: nullptr
-symbol: +
-position: infix
-asociativity: left
-precedence: 3
-function: addition
-
+symbol: Token.type:OPERATOR_L	Token.original: +
+position: Token.type:INFIX_K	Token.original: infix
+asociativity: Token.type:LEFT_K	Token.original: left
+precedence: Token.type:NUMBER_L	Token.original: 3
+function: Token.type:IDENTIFIER_L	Token.original: addition
+operator_declaration:
 visibility: nullptr
-symbol: ^
-position: infix
-asociativity: right
-precedence: 5
-function: power
-
+symbol: Token.type:OPERATOR_L	Token.original: ^
+position: Token.type:INFIX_K	Token.original: infix
+asociativity: Token.type:RIGHT_K	Token.original: right
+precedence: Token.type:NUMBER_L	Token.original: 5
+function: Token.type:IDENTIFIER_L	Token.original: power
+operator_declaration:
 visibility: nullptr
-symbol: #
-position: infix
-asociativity: right
-precedence: 4
-function: something
-
-visibility: private
-symbol: +
-position: prefix
+symbol: Token.type:OPERATOR_L	Token.original: #
+position: Token.type:INFIX_K	Token.original: infix
+asociativity: Token.type:RIGHT_K	Token.original: right
+precedence: Token.type:NUMBER_L	Token.original: 4
+function: Token.type:IDENTIFIER_L	Token.original: something
+operator_declaration:
+visibility: Token.type:PRIVATE_K	Token.original: private
+symbol: Token.type:OPERATOR_L	Token.original: +
+position: Token.type:PREFIX_K	Token.original: prefix
 asociativity: nullptr
 precedence: nullptr
-function: plus
+function: Token.type:IDENTIFIER_L	Token.original: plus
 
-proc : 10
-f : 25
-( : 15
-a : 25
-, : 19
-b : 25
-) : 16
-{ : 17
-var : 11
-c : 25
-:= : 21
-a : 25
-+ : 24
-b : 25
-; : 20
-c : 25
-:= : 21
-c : 25
-+ : 24
-1 : 22
-; : 20
-return : 12
-c : 25
-; : 20
-} : 18
-proc : 10
-fib : 25
-( : 15
-n : 25
-) : 16
-{ : 17
-if : 13
-( : 15
-n : 25
-<= : 24
-1 : 22
-) : 16
-{ : 17
-return : 12
-n : 25
-; : 20
-} : 18
-else : 14
-{ : 17
-return : 12
-fib : 25
-( : 15
-n : 25
-- : 24
-1 : 22
-) : 16
-+ : 24
-fib : 25
-( : 15
-n : 25
-- : 24
-2 : 22
-) : 16
-; : 20
-} : 18
-} : 18
-private : 1
-proc : 10
-g : 25
-( : 15
-) : 16
-{ : 17
-return : 12
-123.456 : 22
-; : 20
-} : 18
-proc : 10
-h : 25
-( : 15
-) : 16
-{ : 17
-return : 12
-2 : 22
-* : 24
-g : 25
-( : 15
-) : 16
-; : 20
-} : 18
- : 26
+Token.type:PROC_K	Token.original: proc
+Token.type:IDENTIFIER_L	Token.original: f
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:IDENTIFIER_L	Token.original: a
+Token.type:COMMA_P	Token.original: ,
+Token.type:IDENTIFIER_L	Token.original: b
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:LBRACE_P	Token.original: {
+Token.type:VAR_K	Token.original: var
+Token.type:IDENTIFIER_L	Token.original: c
+Token.type:ASSIGNMENT_O	Token.original: :=
+Token.type:IDENTIFIER_L	Token.original: a
+Token.type:OPERATOR_L	Token.original: +
+Token.type:IDENTIFIER_L	Token.original: b
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:IDENTIFIER_L	Token.original: c
+Token.type:ASSIGNMENT_O	Token.original: :=
+Token.type:IDENTIFIER_L	Token.original: c
+Token.type:OPERATOR_L	Token.original: +
+Token.type:NUMBER_L	Token.original: 1
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RETURN_K	Token.original: return
+Token.type:IDENTIFIER_L	Token.original: c
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RBRACE_P	Token.original: }
+Token.type:PROC_K	Token.original: proc
+Token.type:IDENTIFIER_L	Token.original: fib
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:IDENTIFIER_L	Token.original: n
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:LBRACE_P	Token.original: {
+Token.type:IF_K	Token.original: if
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:IDENTIFIER_L	Token.original: n
+Token.type:OPERATOR_L	Token.original: <=
+Token.type:NUMBER_L	Token.original: 1
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:LBRACE_P	Token.original: {
+Token.type:RETURN_K	Token.original: return
+Token.type:IDENTIFIER_L	Token.original: n
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RBRACE_P	Token.original: }
+Token.type:ELSE_K	Token.original: else
+Token.type:LBRACE_P	Token.original: {
+Token.type:RETURN_K	Token.original: return
+Token.type:IDENTIFIER_L	Token.original: fib
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:IDENTIFIER_L	Token.original: n
+Token.type:OPERATOR_L	Token.original: -
+Token.type:NUMBER_L	Token.original: 1
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:OPERATOR_L	Token.original: +
+Token.type:IDENTIFIER_L	Token.original: fib
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:IDENTIFIER_L	Token.original: n
+Token.type:OPERATOR_L	Token.original: -
+Token.type:NUMBER_L	Token.original: 2
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RBRACE_P	Token.original: }
+Token.type:RBRACE_P	Token.original: }
+Token.type:PRIVATE_K	Token.original: private
+Token.type:PROC_K	Token.original: proc
+Token.type:IDENTIFIER_L	Token.original: g
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:LBRACE_P	Token.original: {
+Token.type:RETURN_K	Token.original: return
+Token.type:NUMBER_L	Token.original: 123.456
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RBRACE_P	Token.original: }
+Token.type:PROC_K	Token.original: proc
+Token.type:IDENTIFIER_L	Token.original: h
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:LBRACE_P	Token.original: {
+Token.type:RETURN_K	Token.original: return
+Token.type:NUMBER_L	Token.original: 2
+Token.type:OPERATOR_L	Token.original: *
+Token.type:IDENTIFIER_L	Token.original: g
+Token.type:LPARENTHESIS_P	Token.original: (
+Token.type:RPARENTHESIS_P	Token.original: )
+Token.type:SEMICOLON_P	Token.original: ;
+Token.type:RBRACE_P	Token.original: }
+Token.type:END_OF_INPUT	Token.original: 
+

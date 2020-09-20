@@ -48,6 +48,10 @@ struct token {
         return std::string(original);
     }
 
+    operator std::string_view() const {
+        return original;
+    }
+
     operator const char*() const {
         return original.data();
     }

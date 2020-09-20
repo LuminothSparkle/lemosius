@@ -6,63 +6,80 @@
 
 #include"token.h"
 
-struct include_declaration {
-   token* visibility = nullptr;
-   token* file_name;
-};
+namespace declaration {
 
-struct operator_declaration {
-    token* visibility = nullptr;
-    token* symbol;
-    token* position;
-    token* asociativity = nullptr;
-    token* precedence = nullptr;
-    token* function;
-};
+    struct include_declaration {
+        token* visibility = nullptr;
+        token  file_name;
+    };
 
-struct statement {
-    virtual ~statement( ) = 0;
-};
-statement::~statement( ) = default;
+    struct operator_declaration {
+        token* visibility   = nullptr;
+        token  symbol;
+        token  position;
+        token* asociativity = nullptr;
+        token* precedence   = nullptr;
+        token  function;
+    };
 
-struct function_definition {
-    token* visibility = nullptr;
-    token* name;
-    std::vector<token*> parameters;
-    std::unique_ptr<statement> body;
-};
+}
 
-struct group_statement : statement {
-    std::vector<std::unique_ptr<statement>> body;
-    ~group_statement( ) = default;
-};
+namespace expression {
+    struct expression {
+    };
+}
 
-struct expression : statement {
-    ~expression( ) = default;
-};
+namespace statement {
 
-struct selection_statement : statement {
-    std::vector<std::unique_ptr<statement>> if_bodys;
-    std::vector<std::unique_ptr<expression>> if_conditions;
-    std::unique_ptr<statement> else_body = nullptr;
-    ~selection_statement( ) = default;
-};
+    using expression::expression;
 
-struct variable_declaration : statement {
-    token* variable_name;
-    std::unique_ptr<expression> variable_value = nullptr;
-    ~variable_declaration( ) = default;
-};
+    struct statement {
+        virtual ~statement( ) = 0;
+    };
+    statement::~statement( ) = default;
 
-struct return_statement : statement {
-    std::unique_ptr<expression> return_value;
-    ~return_statement( ) = default;
-};
+    struct sequence_statement : statement {
+        std::vector<std::unique_ptr<statement>> body;
+    };
+
+    struct expression_statement : statement {
+        std::unique_ptr<expression> body;
+    };
+
+    struct selection_statement : statement {
+        std::vector<std::unique_ptr<statement>>  if_bodys;
+        std::vector<std::unique_ptr<expression>> if_conditions;
+        std::unique_ptr<statement>               else_body      = nullptr;
+    };
+
+    struct variable_declaration : statement {
+        token                       variable_name;
+        std::unique_ptr<expression> variable_value = nullptr;
+    };
+
+    struct return_statement : statement {
+        std::unique_ptr<expression> return_value = nullptr;
+    };
+    
+}
+
+namespace definition {
+    
+    using statement::sequence_statement;
+    
+    struct function_definition {
+        token*                              visibility = nullptr;
+        token                               name;
+        std::vector<token>                  parameters;
+        std::unique_ptr<sequence_statement> body;
+    };
+    
+}
 
 struct syntax_tree {
-    std::vector<include_declaration> include_decls;
-    std::vector<operator_declaration> operator_decls;
-    std::vector<function_definition> function_defs;
+    std::vector<declaration::include_declaration>  include_declarations;
+    std::vector<declaration::operator_declaration> operator_declarations;
+    std::vector<definition::function_definition>   function_definitions;
 };
 
 #endif
