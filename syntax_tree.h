@@ -6,80 +6,67 @@
 
 #include"token.h"
 
-namespace declaration {
+struct include_declaration {
+    std::string_view source;               //Indica la cadena que representa la declaracion en la fuente original
+    token*           visibility = nullptr;
+    token            file_name;
+};
 
-    struct include_declaration {
-        token* visibility = nullptr;
-        token  file_name;
-    };
+struct operator_declaration {
+    std::string_view source;                 //Indica la cadena que representa la declaracion en la fuente original
+    token*           visibility   = nullptr;
+    token            symbol;
+    token            position;
+    token*           asociativity = nullptr;
+    token*           precedence   = nullptr;
+    token            function;
+};
 
-    struct operator_declaration {
-        token* visibility   = nullptr;
-        token  symbol;
-        token  position;
-        token* asociativity = nullptr;
-        token* precedence   = nullptr;
-        token  function;
-    };
+struct expression {
+    std::string_view original_string; //Indica la cadena que representa la expresion en la fuente original
+};
 
-}
+struct statement {
+    std::string_view source; //Indica la cadena que representa la sentencia en la fuente original
+    virtual ~statement( ) = 0;
+};
+statement::~statement( ) = default;
 
-namespace expression {
-    struct expression {
-    };
-}
+struct sequence_statement : statement {
+    std::vector<std::unique_ptr<statement>> body;
+};
 
-namespace statement {
+struct expression_statement : statement {
+    std::unique_ptr<expression> body;
+};
 
-    using expression::expression;
+struct if_statement : statement {
+    std::vector<std::unique_ptr<statement>>  bodys;
+    std::vector<std::unique_ptr<expression>> conditions;
+    std::unique_ptr<statement>               else_body      = nullptr;
+};
 
-    struct statement {
-        virtual ~statement( ) = 0;
-    };
-    statement::~statement( ) = default;
+struct variable_declaration : statement {
+    token                       name;
+    std::unique_ptr<expression> value = nullptr;
+};
 
-    struct sequence_statement : statement {
-        std::vector<std::unique_ptr<statement>> body;
-    };
+struct return_statement : statement {
+    std::unique_ptr<expression> return_value = nullptr;
+};
 
-    struct expression_statement : statement {
-        std::unique_ptr<expression> body;
-    };
-
-    struct selection_statement : statement {
-        std::vector<std::unique_ptr<statement>>  if_bodys;
-        std::vector<std::unique_ptr<expression>> if_conditions;
-        std::unique_ptr<statement>               else_body      = nullptr;
-    };
-
-    struct variable_declaration : statement {
-        token                       variable_name;
-        std::unique_ptr<expression> variable_value = nullptr;
-    };
-
-    struct return_statement : statement {
-        std::unique_ptr<expression> return_value = nullptr;
-    };
-    
-}
-
-namespace definition {
-    
-    using statement::sequence_statement;
-    
-    struct function_definition {
-        token*                              visibility = nullptr;
-        token                               name;
-        std::vector<token>                  parameters;
-        std::unique_ptr<sequence_statement> body;
-    };
-    
-}
+struct function_definition {
+    std::string_view                    source;               //Indica la cadena que representa la definicion hasta el inicio de las sentencias en la fuente original
+    token*                              visibility = nullptr;
+    token                               name;
+    std::vector<token>                  parameters;
+    std::unique_ptr<sequence_statement> body;
+};
 
 struct syntax_tree {
-    std::vector<declaration::include_declaration>  include_declarations;
-    std::vector<declaration::operator_declaration> operator_declarations;
-    std::vector<definition::function_definition>   function_definitions;
+    std::vector<include_declaration>  includes;
+    std::vector<operator_declaration> operators;
+    std::vector<function_definition>  functions;
 };
 
 #endif

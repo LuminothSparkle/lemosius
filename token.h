@@ -4,9 +4,15 @@
 #include<string>
 #include<string_view>
 
+/* _K de keyword */
+/* _P de puntuacion */
+/* _L de literal */
+/* _O de operador */
+/* UNKNOWN y END_OF_INPUT son tokens especiales que deben ir en la primera y ultima posicion respectivamente */
+
 enum token_type {
     UNKNOWN = -1,
-    PUBLIC_K,            // _K de keyword       (además, por la definición de arriba, PUBLIC_K comienza en 0)
+    PUBLIC_K,
     PRIVATE_K,
     INCLUDE_K,
     OPERATOR_K,
@@ -21,39 +27,38 @@ enum token_type {
     RETURN_K,
     IF_K,
     ELSE_K,
-    LPARENTHESIS_P,      // _P de puntuación
+    LPARENTHESIS_P,
     RPARENTHESIS_P,
     LBRACE_P,
     RBRACE_P,
     COMMA_P,
     SEMICOLON_P,
-    ASSIGNMENT_O,        // _O de operador predefinido
-    NUMBER_L,            // _L de literal
+    ASSIGNMENT_O,
+    NUMBER_L,
     STRING_L,
     OPERATOR_L,
     IDENTIFIER_L,
-    END_OF_INPUT         // sin sufijo (es especial)
+    END_OF_INPUT
 };
 
-//Considere crear la estructura para facilitar las comparaciones en el parser y cuando queramos imprimirlo como cadena y siento que se ven mejor pero no se que opines.
 struct token {
-    token_type type;
-    std::string_view original;
+    token_type type;          //Indica el tipo de token
+    std::string_view source;  //Indica la cadena del token en la fuente original
     
     token_type peek() const {
         return type;
     }
 
     operator std::string() const {
-        return std::string(original);
+        return std::string(source);
     }
 
     operator std::string_view() const {
-        return original;
+        return source;
     }
 
     operator const char*() const {
-        return original.data();
+        return source.data();
     }
 
     operator token_type() const {

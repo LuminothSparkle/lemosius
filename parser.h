@@ -1,35 +1,40 @@
 #ifndef PARSER_H
 #define PARSER_H
 
+#include<iostream>
+
 #include<utility>
 #include<memory>
 
 #include"parser_utilities.h"
 #include"syntax_tree.h"
-#include"error_handling.h"
 
 token* parse_visibility(token*& t) {
    return (is_visibility(*t) ? t++ : nullptr);
 }
 
 syntax_tree parse_header(token*& t) {
-    using declaration::include_declaration, declaration::operator_declaration;
-    syntax_tree s_tree;
-    
-    while(*t == INCLUDE_K || is_visibility(*t) && *(t + 1) == INCLUDE_K) {
+    syntax_tree st;
+    while( *t == INCLUDE_K || (is_visibility(*t) && *(t + 1) == INCLUDE_K) ) {
         include_declaration inc_decl;
-        //Parsea la declaracion de include
+        /* Inicio de donde empieza la declaracion en el archivo */
+        auto first = t->source.data( );
+        /* Parsea la declaracion de include */
         inc_decl.visibility = parse_visibility(t);
         match(t, INCLUDE_K);
         inc_decl.file_name = *match(t, STRING_L, "Syntax Error: Expecting a file name");
         match(t, SEMICOLON_P);
-        //Inserta la declaracion de include
-        s_tree.include_declarations.push_back(std::move(inc_decl));
+        /* Indica donde termina la declaracion en el archivo */
+        auto last = (t-1)->source.data( ) + (t-1)->source.size( );
+        inc_decl.source = {first, static_cast<long unsigned>(last - first)};
+        /* Inserta la declaracion de include */
+        st.includes.push_back(std::move(inc_decl));
     }
-    while(*t == OPERATOR_K || is_visibility(*t) && *(t + 1) == OPERATOR_K) {
+    while( *t == OPERATOR_K || (is_visibility(*t) && *(t + 1) == OPERATOR_K) ) {
         operator_declaration op_decl;
-        
-        //Parsea la declaracion de operador
+        /* Inicio de donde empieza la declaracion en el archivo */
+        auto first = t->source.data( );
+        /* Parsea la declaracion de operador */
         op_decl.visibility = parse_visibility(t);
         match(t, OPERATOR_K);
         op_decl.symbol = *match(t, OPERATOR_L);
@@ -43,16 +48,18 @@ syntax_tree parse_header(token*& t) {
         match(t, AS_K);
         op_decl.function = *match(t, IDENTIFIER_L);
         match(t, SEMICOLON_P);
-        //Inserta la declaracion de operador
-        s_tree.operator_declarations.push_back(op_decl);
+        /* Indica donde termina la declaracion en el archivo */
+        auto last = (t-1)->source.data( ) + (t-1)->source.size( );
+        op_decl.source = {first, static_cast<long unsigned>(last - first)};
+        /* Inserta la declaracion de operador */
+        st.operators.push_back(std::move(op_decl));
     }
     match(t, END_OF_INPUT);
-    
-    return s_tree;
+    return st;
 }
 
-std::unique_ptr<statement::statement> parse_statement(token*& t);
-std::unique_ptr<expression::expression> parse_expression(token*& t);
+std::unique_ptr<statement> parse_statement(token*& t);
+std::unique_ptr<expression> parse_expression(token*& t);
 
 //Hecho para probar la gramatica.
 auto parse_operand(token*& t) {
@@ -72,9 +79,7 @@ auto parse_operand(token*& t) {
 }
 
 //Hecho para probar la gramatica.
-std::unique_ptr<expression::expression> parse_expression(token*& t) {
-    using expression::expression;
-    
+std::unique_ptr<expression> parse_expression(token*& t) {
     parse_operand(t);
     while(is_operator(*t)) {    
         match(t, is_operator);
@@ -85,7 +90,6 @@ std::unique_ptr<expression::expression> parse_expression(token*& t) {
 }
 
 auto parse_expression_statement(token*& t) {
-    using statement::expression_statement, expression::expression;
     auto exp_stmt = std::make_unique<expression_statement>();
     
     if(*t != SEMICOLON_P) {
@@ -96,60 +100,7 @@ auto parse_expression_statement(token*& t) {
     return exp_stmt;
 }
 
-auto parse_selection_statement(token*& t) {
-    using statement::selection_statement, expression::expression, statement::statement;
-    auto sel_stmt = std::make_unique<selection_statement>();
-    
-    match(t, IF_K);
-    match(t, LPARENTHESIS_P);
-    sel_stmt->if_conditions.push_back(parse_expression(t));
-    match(t, RPARENTHESIS_P);
-    sel_stmt->if_bodys.push_back(parse_statement(t));
-    while(*t == ELSE_K && *(t + 1) == IF_K) {
-        match(t, ELSE_K);
-        match(t, IF_K);
-        match(t, LPARENTHESIS_P);
-        sel_stmt->if_conditions.push_back(parse_expression(t));
-        match(t, RPARENTHESIS_P);
-        sel_stmt->if_bodys.push_back(parse_statement(t));
-    }
-    if(*t == ELSE_K) {
-        match(t, ELSE_K);
-        sel_stmt->else_body = parse_statement(t);
-    }
-    
-    return sel_stmt;
-}
-
-auto parse_variable_declaration(token*& t) {
-    using statement::variable_declaration, expression::expression;
-    auto var_decl = std::make_unique<variable_declaration>();
-
-    match(t, VAR_K);
-    var_decl->variable_name = *match(t, IDENTIFIER_L);
-    if(*t == ASSIGNMENT_O) {
-        match(t, ASSIGNMENT_O);
-        var_decl->variable_value = parse_expression(t);
-    }
-    match(t, SEMICOLON_P);
-    
-    return var_decl;
-}
-
-auto parse_return_statement(token*& t) {
-    using statement::return_statement, expression::expression;
-    auto ret_stmt = std::make_unique<return_statement>();
-
-    match(t, RETURN_K);
-    ret_stmt->return_value = parse_expression(t);
-    match(t, SEMICOLON_P);
-    
-    return ret_stmt;
-}
-
-
 auto parse_sequence_statement(token*& t) {
-    using statement::sequence_statement;    
     auto seq_stmt = std::make_unique<sequence_statement>();
 
     match(t, LBRACE_P);
@@ -160,14 +111,60 @@ auto parse_sequence_statement(token*& t) {
     return seq_stmt;
 }
 
-std::unique_ptr<statement::statement> parse_statement(token*& t) {
-    using statement::statement;
+auto parse_if_statement(token*& t) {
+    auto if_stmt = std::make_unique<if_statement>();
     
+    match(t, IF_K);
+    match(t, LPARENTHESIS_P);
+    if_stmt->conditions.push_back(parse_expression(t));
+    match(t, RPARENTHESIS_P);
+    if_stmt->bodys.push_back(parse_sequence_statement(t));
+    while(*t == ELSE_K && *(t + 1) == IF_K) {
+        match(t, ELSE_K);
+        match(t, IF_K);
+        match(t, LPARENTHESIS_P);
+        if_stmt->conditions.push_back(parse_expression(t));
+        match(t, RPARENTHESIS_P);
+        if_stmt->bodys.push_back(parse_sequence_statement(t));
+    }
+    if(*t == ELSE_K) {
+        match(t, ELSE_K);
+        if_stmt->else_body = parse_sequence_statement(t);
+    }
+    
+    return if_stmt;
+}
+
+auto parse_variable_declaration(token*& t) {
+    auto var_decl = std::make_unique<variable_declaration>();
+
+    match(t, VAR_K);
+    var_decl->name = *match(t, IDENTIFIER_L);
+    if(*t == ASSIGNMENT_O) {
+        match(t, ASSIGNMENT_O);
+        var_decl->value = parse_expression(t);
+    }
+    match(t, SEMICOLON_P);
+    
+    return var_decl;
+}
+
+auto parse_return_statement(token*& t) {
+    auto ret_stmt = std::make_unique<return_statement>();
+
+    match(t, RETURN_K);
+    ret_stmt->return_value = parse_expression(t);
+    match(t, SEMICOLON_P);
+    
+    return ret_stmt;
+}
+
+std::unique_ptr<statement> parse_statement(token*& t) {
     switch(*t) {
         case LBRACE_P:
             return parse_sequence_statement(t);
         case IF_K:
-            return parse_selection_statement(t);
+            return parse_if_statement(t);
         case VAR_K:
             return parse_variable_declaration(t);
         case RETURN_K:
@@ -176,18 +173,18 @@ std::unique_ptr<statement::statement> parse_statement(token*& t) {
         case IDENTIFIER_L:
         case OPERATOR_L:
             return parse_expression_statement(t);
-        case SEMICOLON_P:
+        default:
             match(t, SEMICOLON_P);
     }
     return std::unique_ptr<statement>(nullptr);
 }
 
-syntax_tree& parse_program(token*& t, syntax_tree& s_tree) {
-    using definition::function_definition;
-
-    while(*t == PROC_K || is_visibility(*t) && *(t + 1) == PROC_K) {
+syntax_tree& parse_program(token*& t, syntax_tree& st) {
+    while( *t == PROC_K || (is_visibility(*t) && *(t + 1) == PROC_K) ) {
         function_definition func_def;
-        
+        /* Inicio de donde empieza la declaracion en el archivo */
+        auto first = t->source.data( );
+	    /* Parsea la definicion de la funcion */
         func_def.visibility = parse_visibility(t);
         match(t, PROC_K);
         func_def.name = *match(t, IDENTIFIER_L);
@@ -198,12 +195,16 @@ syntax_tree& parse_program(token*& t, syntax_tree& s_tree) {
                 match(t, COMMA_P);
         }
         match(t, RPARENTHESIS_P);
+        /* Indica donde termina la declaracion en el archivo */
+        auto last = (t-1)->source.data( ) + (t-1)->source.size( );
+        func_def.source = {first, static_cast<long unsigned>(last - first)};
+        /* Parsea las demas sentencias de la funcion */
         func_def.body = parse_sequence_statement(t);
-        s_tree.function_definitions.push_back(std::move(func_def));
+        /* Inserta la funcion al arbol. */
+        st.functions.push_back(std::move(func_def));
     }
     match(t, END_OF_INPUT);
-    
-    return s_tree;
+    return st;
 }
 
 #endif

@@ -5,17 +5,19 @@
 #include<utility>
 
 #include"token.h"
+#include"compiler_error.h"
 
+/* Template de match con predicado y mensaje lanzado en caso de error */
 template<typename P>
 token* match(token*& t, P pred, const char* mes = "Syntax Error") {
     if(!pred(*t)) {
-        throw std::make_pair(*t,mes);
+        throw compiler_error{SYNTAX_ERROR, t->source, mes};
     }
     return t++;
 }
 
 token* match(token*& t, token_type type, const char* mes = "Syntax Error") {
-    return match(t, [&](token_type t) {
+    return match(t, [&type](token_type t) {
       return t == type;
     }, mes);
 }

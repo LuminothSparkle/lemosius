@@ -14,11 +14,13 @@
 #include<re2/stringpiece.h>
 
 #include"token.h"
+#include"compiler_error.h"
 
 struct lexer {
-    std::array<std::vector<std::string>, END_OF_INPUT> token_forms;
+    std::array<std::vector<std::string>, END_OF_INPUT> token_forms; //Formas que pueden tomar los tokens reconocidos por el lexer
 
     RE2 generate_expresion( ) const {
+        /* Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas */
         auto join = [&](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
             std::string res = prefix;
             for (std::size_t i = 0; i < v.size( ); ++i) {
@@ -26,8 +28,13 @@ struct lexer {
             }
             return res;
         };
+        std::vector<std::string> other_tokens = {          //Tokens reconocidos como validos pero que no generan token para el parser
+            R"(\s+)",                                      //Espacios y saltos de linea
+            R"(\#\#\#(?:[^\#](?s:.*)[^\#]|[^\#]?)\#\#\#)", //Comentarios multilinea
+            R"(\#\#(?:[^\#\n][^\n]*\n|\n|$))",             //Comentarios de una linea
+        };
         std::vector<std::string> parts(token_forms.size( ) + 1);
-        parts[0] = R"(\s+|\#\#\#[^\#]*\#\#\#|\#\#[^\#\n]*)";
+        parts[0] = join(other_tokens,"|");
         std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,[&](const std::vector<std::string>& t) {
             return join(t,"|","(",")");
         });
@@ -35,34 +42,37 @@ struct lexer {
     }
 
     std::vector<token> analisis(const char*& ini, token_type stop) const  {
+        /* Genera expresion e inicializa la entrada del mismo */
         RE2 e = generate_expresion( );
         re2::StringPiece input( ini );
-        
+        /* Se generan los argumentos para la expresion regular, que son el arreglo de cadenas que son atrapadas, cada una identificada por el token_type */
         std::array< re2::StringPiece, END_OF_INPUT > mt;
-        std::array< RE2::Arg, END_OF_INPUT > args;
-        std::array< const RE2::Arg*, END_OF_INPUT > m;
-        std::transform(mt.begin( ), mt.end( ), args.begin( ), [&](re2::StringPiece& s){return &s;});
-        std::transform(args.begin( ), args.end( ), m.begin( ), [&](RE2::Arg& a){return &a;});
+        std::array< RE2::Arg,         END_OF_INPUT > args;
+        std::array< const RE2::Arg*,  END_OF_INPUT > m;
+        std::transform(mt.begin( ),   mt.end( ),   args.begin( ), [](re2::StringPiece& s){return &s;});
+        std::transform(args.begin( ), args.end( ), m.begin( ),    [](RE2::Arg& a)        {return &a;});
+        /* Inicia el analisis lexico */
         std::vector<token> tokens;
+        /* Para hasta que termines la entrada y cuando el token de parada sea END_OF_INPUT o llegues al token de parada */
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
+            /* Reconoce la cadena y si falla manda un error de compilador */
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
-                throw std::make_pair( 
-                        token{ UNKNOWN, {input.data( ),input.length( )} },
-                        "Lexic Error"
-                      );
+                throw compiler_error{LEXIC_ERROR, {input.data( ), input.size( )}, "Lexic Error: Unknown token."};
             }
-            token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[&](const re2::StringPiece& s){
+            /* Determina el tipo de token */
+            token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[](const re2::StringPiece& s){
                 return !s.empty( );
             }) - mt.begin( ));
+            /* Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada */
             if(type < END_OF_INPUT && type != stop) {
-                tokens.push_back( { type, {mt[type].data( ), mt[type].length()} } );
+                tokens.push_back({ type, {mt[type].data( ), mt[type].length()} });
             }
         }
-        
+        /* Mueve la entrada hasta donde reconociste */
         auto len = (stop != END_OF_INPUT ? mt[stop].length( ) : 0);
         ini = input.data( ) - len;
-        tokens.push_back( { END_OF_INPUT, {ini, len} } ); 
-        
+        /* Inserta un token de END_OF_INPUT reemplazando siempre el token de parada */
+        tokens.push_back({ END_OF_INPUT, {ini, len} }); 
         return tokens;
     }
 
@@ -98,7 +108,6 @@ struct lexer {
         token_forms[OPERATOR_L] =     { R"([)" + RE2::QuoteMeta(R"(!#$%&'*+-./:<=>?@\^`|~)") + R"(]+)" };
         token_forms[IDENTIFIER_L] =   { R"(\w+)" };
     }
-
 };
 
 #endif
