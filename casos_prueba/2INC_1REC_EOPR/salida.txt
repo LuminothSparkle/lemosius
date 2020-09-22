@@ -1,0 +1,10 @@
+Compilacion exitosa
+error_compiler:
+code:OPERATOR_REDEFINED_ERROR
+where:operator ! prefix as logical_not;
+what:Semantic Error: Redefinition Operator.
+file:prueba3.txt
+Error en linea 1, columna 1:
+	operator ! prefix as logical_not;
+	^
+

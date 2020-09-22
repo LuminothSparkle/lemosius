@@ -1,10 +1,3 @@
-include "hola.algo";                             ## hay que decidir la extensión
-private include "adios.algo";                    ## en este archivo puedes usar los símbolos públicos de una inclusión privada, pero quien te incluya no puede usarlos (private rompe la transitividad)
-
-operator ! prefix as logical_not;                ## los símbolos que no se pueden usar en los operadores son . , ; " ( ) [ ] { }
-operator ! suffix as factorial;                  ## un operador se puede definir varias veces, siempre y cuando sea con diferente posición
-operator + infix (left 3) as addition;           ## para la posición infija, dentro de paréntesis van la asociatividad y la precedencia
-operator ^ infix (right 5) as power;
 operator # infix (right 4) as something; 
 private operator + prefix as plus;               ## los operadores también pueden ser privados
 
