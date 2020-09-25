@@ -1,14 +1,17 @@
 #ifndef INOUT_H
 #define INOUT_H
+
 #include<filesystem>
 #include<fstream>
-#include<string>
+#include<vector>
 
-std::string read_file(const char* path) {
-    auto len = std::filesystem::file_size(path);
-    std::string buf(len,'\0');
-    std::ifstream input(path);
-    input.read(&buf[0],len);
+std::vector<char> read_file(const std::filesystem::path& path) {
+    auto len = std::filesystem::file_size( path );
+    std::vector<char> buf( len + 1, '\0' );
+    std::ifstream input;
+    input.exceptions( std::ifstream::failbit | std::ifstream::badbit );
+    input.open( path );
+    input.read( buf.data( ), len );
     return buf;
 }
 
