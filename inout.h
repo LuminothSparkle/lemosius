@@ -6,11 +6,11 @@
 #include<vector>
 
 std::vector<char> read_file(const std::filesystem::path& path) {
-    auto len = std::filesystem::file_size( path );
-    std::vector<char> buf( len + 1, '\0' );
     std::ifstream input;
     input.exceptions( std::ifstream::failbit | std::ifstream::badbit );
-    input.open( path );
+    input.open( path );                                     // prefiero que la primera excepción nos provoque el error "cannot open" en lugar de "cannot stat"
+    auto len = std::filesystem::file_size( path );
+    std::vector<char> buf( len + 1, '\0' );
     input.read( buf.data( ), len );
     return buf;
 }

@@ -12,8 +12,8 @@ bool is_public(const T& t) {
 };
 
 // Funcion que ayuda a extraer de una literal string su cadena interna, como actualmente son del estilo "algo" basta con quitar las comillas
-std::string extract_string_literal(const token& t) {
-    return std::string(t.source.substr(1,t.source.size()-2));
+std::string extract_string_literal(const token& t) {            // ahorita el valor de retorno podría ser un std::string_view
+    return std::string(t.source.substr(1,t.source.size()-2));   // eventualmente sí tendrá que ser un std::string porque es necesario el unquote
 };
 
 #endif
