@@ -1,10 +1,10 @@
 #ifndef LEXER_H
 #define LEXER_H
 
+#include"string_utilities.h"
+
 #include<re2/re2.h>
 #include<re2/stringpiece.h>
-
-#include<cstddef>
 
 #include<algorithm>
 #include<utility>
@@ -58,16 +58,12 @@ struct token {
         return type;
     }
 
-    operator std::string() const {
+    std::string str() const {
         return std::string(source);
     }
-
-    operator std::string_view() const {
-        return source;
-    }
-
-    operator const char*() const {
-        return source.data();
+    
+    const char* data( ) const {
+        return source.data( );
     }
 
     operator token_type() const {
@@ -80,14 +76,7 @@ struct lexer {
     std::array<std::vector<std::string>, END_OF_INPUT> token_forms; // Formas que pueden tomar los tokens reconocidos por el lexer
 
     RE2 generate_expresion( ) const {
-        // Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas 
-        auto join = [&](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
-            std::string res = prefix;
-            for (std::size_t i = 0; i < v.size( ); ++i) {
-                res += v[i] + (i + 1 < v.size( ) ? sep : suffix);
-            }
-            return res;
-        };
+        // Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas
         std::vector<std::string> other_tokens = {          // Tokens reconocidos como validos pero que no generan token para el parser
             R"(\s+)",                                      // Espacios y saltos de linea
             R"(\#\#\#(?:[^\#](?s:.*)[^\#]|[^\#]?)\#\#\#)", // Comentarios multilinea
@@ -117,7 +106,8 @@ struct lexer {
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
             // Reconoce la cadena y si falla manda un error de compilador 
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
-                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, std::string("Lexic Error")); //
+		using namespace std::string_literals;
+                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error"s); //
             }
             // Determina el tipo de token 
             token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[](const re2::StringPiece& s){
@@ -164,7 +154,7 @@ struct lexer {
         token_forms[SEMICOLON_P] =    { RE2::QuoteMeta(";") };
         token_forms[ASSIGNMENT_O] =   { RE2::QuoteMeta(":=") };
         token_forms[NUMBER_L] =       { R"(\d+(?:\.\d*)?)", R"(\.\d+)" };
-        token_forms[STRING_L] =       { R"(\"[^\"]*\")" };
+        token_forms[STRING_L] =       { R"(\"(?:[^\"\n]|\")*\")" };
         token_forms[OPERATOR_L] =     { R"([)" + RE2::QuoteMeta(R"(!#$%&'*+-./:<=>?@\^`|~)") + R"(]+)" };
         token_forms[IDENTIFIER_L] =   { R"(\w+)" };
     }

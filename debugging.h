@@ -31,8 +31,8 @@ const std::map<token_type,const char*> token_str {
     {LBRACE_P,       "LBRACE_P"},
     {RBRACE_P,       "RBRACE_P"},
     {COMMA_P,        "COMMA_P"},
-    {SEMICOLON_P,    "SEMICOLON_P"}, 
-    {ASSIGNMENT_O,   "ASSIGNMENT_O"}, 
+    {SEMICOLON_P,    "SEMICOLON_P"},
+    {ASSIGNMENT_O,   "ASSIGNMENT_O"},
     {NUMBER_L,       "NUMBER_L"},
     {STRING_L,       "STRING_L"},
     {OPERATOR_L,     "OPERATOR_L"},
@@ -49,7 +49,7 @@ std::ostream& operator <<(std::ostream& os, const token& t) {
 }
 
 std::ostream& operator <<(std::ostream& os, token* t) {
-    return (t == nullptr ? os << "nullptr" : os << *t);
+    return (t == nullptr ? os << "[null_token]" : os << *t);
 }
 
 template<typename T>
@@ -68,7 +68,6 @@ std::ostream& operator <<(std::ostream& os, const std::vector<char>& v) {
     return os;
 }
 
-
 std::ostream& operator <<(std::ostream& os, const include_declaration& inc) {
     return os << "include_declaration:\n"
               << "access: "     << inc.access    << "\n"
@@ -84,12 +83,6 @@ std::ostream& operator <<(std::ostream& os, const operator_declaration& op) {
               << "precedence: "   << op.precedence   << "\n"
               << "function: "     << op.function     << "\n";
 }
-
-std::filesystem::path source_path;
-    std::vector<char>     source_file;
-    std::vector<token>    header_tokens;
-    std::vector<token>    program_tokens;
-    syntax_tree           tree;
 
 std::ostream& operator <<(std::ostream& os, const program_resources& pr) {
     return os << "program_resources:\n"

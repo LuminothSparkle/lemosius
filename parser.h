@@ -11,6 +11,14 @@
 struct include_declaration {
     token* access     = nullptr;
     token  file_name;
+    std::string str() const {
+        std::string decl;
+        decl += (access != nullptr ? access->str( ) + " " : "");
+        decl += "include ";
+        decl += file_name.str( );
+        decl += ";";
+        return decl;
+    }
 }; // end struct include_declaration
 
 struct operator_declaration {
@@ -20,6 +28,18 @@ struct operator_declaration {
     token* asociativity = nullptr;
     token* precedence   = nullptr;
     token  function;
+    std::string str() const {
+        std::string decl;
+        decl += (access != nullptr ? access->str( ) + " " : "");
+        decl += "operator ";
+        decl += symbol.str( );
+        decl += position.str( );
+        decl += (position == INFIX_K ? "(" + asociativity->str( ) + " " + precedence->str( ) + ")" : "");
+        decl += " as ";
+        decl += function.str( );
+        decl += ";";
+        return decl; 
+    }
 }; // end struct operator_declaration
 
 struct expression {
