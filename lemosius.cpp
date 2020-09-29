@@ -4,6 +4,8 @@
 #include"inout.h"
 #include"debugging.h"
 
+#include<cstddef>
+
 #include<iostream>
 #include<set>
 #include<stack>
@@ -12,7 +14,6 @@
 #include<utility>
 #include<array>
 #include<algorithm>
-#include<cstddef>
 
 struct compiler_error {     // cada vez que se eleva un error que es capturado en el driver, se construye el mensaje; en cuanto éste esté construido, nos podemos despreocupar de los recursos del programa
     static unsigned line_of(const token& t, const char* ini) {
