@@ -3,7 +3,7 @@ operator ! suffix as factorial;                  ## un operador se puede definir
 operator + infix (left 3) as addition;           ## para la posición infija, dentro de paréntesis van la asociatividad y la precedencia
 operator ^ infix (right 5) as power;
 operator # infix (right 4) as something; 
-private operator + prefix as plus;               ## los operadores también pueden ser privados
+private operator + prefix as plus;               ## los operadores también pueden ser privados ssdada
 
 
 ###
