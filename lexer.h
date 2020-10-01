@@ -1,8 +1,6 @@
 #ifndef LEXER_H
 #define LEXER_H
 
-#include"string_utilities.h"
-
 #include<re2/re2.h>
 #include<re2/stringpiece.h>
 
@@ -77,6 +75,13 @@ struct lexer {
 
     RE2 generate_expresion( ) const {
         // Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas
+        auto join = [](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
+            std::string res = prefix;
+            for(auto it = v.begin(); it != v.end(); ++it) {
+                res += *it + (std::next(it) != v.end() ? sep : suffix);
+            }
+            return res;
+        };
         std::vector<std::string> other_tokens = {          // Tokens reconocidos como validos pero que no generan token para el parser
             R"(\s+)",                                      // Espacios y saltos de linea
             R"(\#\#\#(?:[^\#](?s:.*)[^\#]|[^\#]?)\#\#\#)", // Comentarios multilinea
@@ -84,7 +89,8 @@ struct lexer {
         };
         std::vector<std::string> parts(token_forms.size( ) + 1);
         parts[0] = join(other_tokens,"|");
-        std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,[&](const std::vector<std::string>& t) {
+        std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,
+	[&](const std::vector<std::string>& t) {
             return join(t,"|","(",")");
         });
         return RE2(join(parts,"|"));
