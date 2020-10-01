@@ -60,7 +60,6 @@ std::ostream& operator <<(std::ostream& os, const std::vector<T>& v) {
     return os;
 }
 
-template<>
 std::ostream& operator <<(std::ostream& os, const std::vector<char>& v) {
     for(const auto& e : v) {
         os << e;
