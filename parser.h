@@ -11,6 +11,7 @@
 struct include_declaration {
     token* access     = nullptr;
     token  file_name;
+
     std::string str() const {
         std::string decl;
         decl += (access != nullptr ? access->str( ) + " " : "");
@@ -28,6 +29,7 @@ struct operator_declaration {
     token* asociativity = nullptr;
     token* precedence   = nullptr;
     token  function;
+
     std::string str() const {
         std::string decl;
         decl += (access != nullptr ? access->str( ) + " " : "");
