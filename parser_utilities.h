@@ -28,20 +28,19 @@ bool is_operator(token& t) {
     return t == OPERATOR_L || t == ASSIGNMENT_O;
 }
 
+auto match_any(std::initializer_list<token_type> il) {
+   return [il](token_type t) {
+      return std::find(il.begin(), il.end(), t) != il.end();
+   };
+}
+
 template<typename P>
 token* optional_match(token*& t, P pred) {
     return (pred(*t) ? t++ : nullptr);
 }
 
-template<std::size_t N>
-token* optional_match(token*& t, const std::array<token_type,N>& types) {
-    return optional_match(t,[&types](token_type t) {
-        return std::find(types.begin(), types.end(), t) != types.end();
-    });
-} // end function optional_match
-
 token* optional_match(token*& t, token_type type) {
-    return optional_match(t, std::array<token_type,1>({type}));
+    return optional_match(t, match_any({ type }));
 }
 
 // Template de match con predicado 
@@ -53,15 +52,8 @@ token* match(token*& t, P pred, const std::string& mes = "") {
     return t++;
 } // end function match
 
-template<std::size_t N>
-token* match(token*& t, const std::array<token_type,N>& types, const std::string& mes = "") {
-    return match(t,[&types](token_type t) {
-        return std::find(types.begin(), types.end(), t) != types.end();
-    }, mes);
-} // end function match
-
 token* match(token*& t, token_type type, const std::string& mes = "") {
-    return match(t, std::array<token_type,1>({type}), mes);
+    return match(t, match_any({ type }), mes);
 } // end function match
 
 
