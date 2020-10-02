@@ -17,6 +17,7 @@
 struct program_resources {
     struct inclusion;
     struct usable_operator;
+
     std::filesystem::path source_path;
     std::vector<char>     source_file;
     std::vector<token>    header_tokens;
@@ -28,12 +29,12 @@ struct program_resources {
 };
 
 struct program_resources::inclusion {
-   bool access;
+   bool              access;
    program_resources resources;
 };
 
 struct program_resources::usable_operator {
-   bool access;
+   bool                 access;
    operator_declaration declaration;
 };
 
@@ -49,18 +50,16 @@ void analyze_operators(program_resources& pr) {
             });
         }
     };
-    for(const auto& inc : pr.inclusions) {
-        std::transform( inc.resources.operators.begin(), inc.resources.operators.end(), std::back_insert_iterator(pr.operators),
-        [&check_overload,&inc](const program_resources::usable_operator& op) -> program_resources::usable_operator {
-            check_overload(op.declaration);
-            return {op.access && inc.access, op.declaration};
-        });
+    for(const auto& [inc_access, inc_pr] : pr.inclusions) {
+        for(const auto& [op_access, decl] : inc_pr.operators) {
+            check_overload(decl);
+            pr.operators.emplace_back(op_access && inc_access, decl);
+        }
     }
-    std::transform( pr.tree.operators.begin(), pr.tree.operators.end(), std::back_insert_iterator(pr.operators),
-    [&check_overload](const operator_declaration& op) -> program_resources::usable_operator {
+    for(const auto& op : pr.tree.operators) {
         check_overload(op);
-        return {is_public(op), op};
-    });
+        pr.operators.emplace_back(is_public(op), op);
+    }
 }
 
 #endif
