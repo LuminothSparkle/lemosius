@@ -2,7 +2,9 @@
 #define SEMANTIC_UTILITIES_H
 
 #include"lexer.h"
+
 #include<string>
+#include<string_view>
 #include<utility>
 #include<limits>
 
@@ -15,7 +17,11 @@ bool isoctal(char c) {
     return isdigit(c) && c < '8';
 }
 
-std::string unquote(const token& t) {
+std::string unquoted_str(const token& t) {
+    auto throw_error = [&t]() {
+        using namespace std::string_literals;
+        throw std::make_pair( t, "Semantic Error: String literal is ill-formed"s);
+    };
     auto first = t.source.begin( ), last = std::find(first,t.source.end( ),'\\');
     std::string res(first,last - first);
     while( last != t.source.end( ) ) {
@@ -25,14 +31,14 @@ std::string unquote(const token& t) {
         std::size_t idx = std::find(escaped.begin( ),escaped.end( ),*last) - escaped.begin( );
         if(idx != escaped.size( )) {
             res.push_back(replacement[idx]);
-            ++last;
+            std::advance(last,1);
         }
         else if(*last == 'x' || isoctal(*last)) {
-            bool is_hex = *last == 'x';
-            std::advance(last,is_hex);
+            bool is_hex           = *last == 'x';
             std::size_t max_chars = (is_hex ? 2 : 3);
-            std::size_t base = (is_hex ? 16 : 8);
-            auto push_value = [&max_chars,&base](std::string& res, const char*& val_begin) {
+            std::size_t base      = (is_hex ? 16 : 8);
+            std::advance(last,is_hex);
+            auto push_value = [&max_chars,&base,&res](const char*& val_begin) {
                 try {
                     std::size_t next_pos = 0;
                     auto val = stoull(std::string(val_begin,max_chars),&next_pos,base);
@@ -44,17 +50,15 @@ std::string unquote(const token& t) {
                     return false;
                 }
             };
-            if(!push_value(res,last)) {
-                using namespace std::string_literals;
-                throw std::make_pair( t, "Semantic Error: String literal is ill-formed"s);
+            if(!push_value(last)) {
+                throw_error();
             }
-            while(is_hex && push_value(res,last));
+            while(is_hex && push_value(last));
         }
         else {
-            using namespace std::string_literals;
-            throw std::make_pair( t, "Semantic Error: String literal is ill-formed"s);
+            throw_error();
         }
-        
+
         first = last; last = std::find(first,t.source.end( ),'\\');
         res.append(first,last);
     }
