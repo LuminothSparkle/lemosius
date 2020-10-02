@@ -4,8 +4,6 @@
 #include<re2/re2.h>
 #include<re2/stringpiece.h>
 
-#include<cstddef>
-
 #include<algorithm>
 #include<utility>
 #include<string_view>
@@ -13,11 +11,11 @@
 #include<vector>
 #include<array>
 
-// _K de keyword 
-// _P de puntuacion 
-// _L de literal 
-// _O de operador 
-// UNKNOWN y END_OF_INPUT son tokens especiales que deben ir en la primera y ultima posicion respectivamente 
+// _K de keyword
+// _P de puntuacion
+// _L de literal
+// _O de operador
+// UNKNOWN y END_OF_INPUT son tokens especiales que deben ir en la primera y ultima posicion respectivamente
 
 enum token_type {
     UNKNOWN = -1,
@@ -53,26 +51,19 @@ enum token_type {
 struct token {
     token_type type;          // Indica el tipo de token
     std::string_view source;  // Indica la cadena del token en la fuente original
-    
-    token_type peek() const {
-        return type;
-    }
 
-    operator std::string() const {
+    std::string str() const {
         return std::string(source);
     }
 
-    operator std::string_view() const {
-        return source;
-    }
-
-    operator const char*() const {
-        return source.data();
+    const char* data( ) const {
+        return source.data( );
     }
 
     operator token_type() const {
         return type;
     }
+
 }; // end struct token
 
 
@@ -80,11 +71,11 @@ struct lexer {
     std::array<std::vector<std::string>, END_OF_INPUT> token_forms; // Formas que pueden tomar los tokens reconocidos por el lexer
 
     RE2 generate_expresion( ) const {
-        // Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas 
-        auto join = [&](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
+        // Lambda para juntar cadenas con un prefijo "prefix", un sufijo "suffix" y un separador "sep" entre cadenas
+        auto join = [](const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
             std::string res = prefix;
-            for (std::size_t i = 0; i < v.size( ); ++i) {
-                res += v[i] + (i + 1 < v.size( ) ? sep : suffix);
+            for(auto it = v.begin(); it != v.end(); ++it) {
+                res += *it + (std::next(it) != v.end() ? sep : suffix);
             }
             return res;
         };
@@ -95,7 +86,8 @@ struct lexer {
         };
         std::vector<std::string> parts(token_forms.size( ) + 1);
         parts[0] = join(other_tokens,"|");
-        std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,[&](const std::vector<std::string>& t) {
+        std::transform(token_forms.begin( ),token_forms.end( ),parts.begin( ) + 1,
+	[&](const std::vector<std::string>& t) {
             return join(t,"|","(",")");
         });
         return RE2(join(parts,"|"));
@@ -115,24 +107,25 @@ struct lexer {
         std::vector<token> tokens;
         // Para hasta que termines la entrada y cuando el token de parada sea END_OF_INPUT o llegues al token de parada
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
-            // Reconoce la cadena y si falla manda un error de compilador 
+            // Reconoce la cadena y si falla manda un error de compilador
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
-                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, std::string("Lexic Error")); //
+                using namespace std::string_literals;
+                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error"s); //
             }
-            // Determina el tipo de token 
+            // Determina el tipo de token
             token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[](const re2::StringPiece& s){
                 return !s.empty( );
             }) - mt.begin( ));
-            // Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada 
+            // Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada
             if(type < END_OF_INPUT && type != stop) {
                 tokens.push_back({ type, {mt[type].data( ), mt[type].length()} });
             }
         }
-        // Mueve la entrada hasta donde reconociste 
+        // Mueve la entrada hasta donde reconociste
         auto len = (stop != END_OF_INPUT ? mt[stop].length( ) : 0);
         ini = input.data( ) - len;
-        // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada 
-        tokens.push_back({ END_OF_INPUT, {ini, len} }); 
+        // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada
+        tokens.push_back({ END_OF_INPUT, {ini, len} });
         return tokens;
     }
 
@@ -164,7 +157,7 @@ struct lexer {
         token_forms[SEMICOLON_P] =    { RE2::QuoteMeta(";") };
         token_forms[ASSIGNMENT_O] =   { RE2::QuoteMeta(":=") };
         token_forms[NUMBER_L] =       { R"(\d+(?:\.\d*)?)", R"(\.\d+)" };
-        token_forms[STRING_L] =       { R"(\"[^\"]*\")" };
+        token_forms[STRING_L] =       { R"(\"(?:[^\"\n]|\")*\")" };
         token_forms[OPERATOR_L] =     { R"([)" + RE2::QuoteMeta(R"(!#$%&'*+-./:<=>?@\^`|~)") + R"(]+)" };
         token_forms[IDENTIFIER_L] =   { R"(\w+)" };
     }

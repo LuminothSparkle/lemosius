@@ -1,0 +1,5 @@
+"prueba.txt":2:17: In file included
+	"prueba3.t
+
+"prueba3.txt": Cannot open or read file
+

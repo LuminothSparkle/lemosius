@@ -49,7 +49,7 @@ std::ostream& operator <<(std::ostream& os, const token& t) {
 }
 
 std::ostream& operator <<(std::ostream& os, token* t) {
-    return (t == nullptr ? os << "[null]" : os << *t);   // un nombre de variable podría ser nullptr, hay que identificarlo de otra forma
+    return (t == nullptr ? os << "[null_token]" : os << *t);
 }
 
 template<typename T>
@@ -60,14 +60,12 @@ std::ostream& operator <<(std::ostream& os, const std::vector<T>& v) {
     return os;
 }
 
-template<>
 std::ostream& operator <<(std::ostream& os, const std::vector<char>& v) {
     for(const auto& e : v) {
         os << e;
     }
     return os;
 }
-
 
 std::ostream& operator <<(std::ostream& os, const include_declaration& inc) {
     return os << "include_declaration:\n"
