@@ -28,7 +28,7 @@ bool is_operator(const token& t) {
     return t == OPERATOR_L || t == ASSIGNMENT_O;
 }
 
-auto match_any(std::initializer_list<token_type> il) {
+auto match_any(const std::initializer_list<token_type>& il) {
    return [&il](token_type t) {
       return std::find(il.begin(), il.end(), t) != il.end();
    };
