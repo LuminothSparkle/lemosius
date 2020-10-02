@@ -11,11 +11,11 @@
 #include<vector>
 #include<array>
 
-// _K de keyword 
-// _P de puntuacion 
-// _L de literal 
-// _O de operador 
-// UNKNOWN y END_OF_INPUT son tokens especiales que deben ir en la primera y ultima posicion respectivamente 
+// _K de keyword
+// _P de puntuacion
+// _L de literal
+// _O de operador
+// UNKNOWN y END_OF_INPUT son tokens especiales que deben ir en la primera y ultima posicion respectivamente
 
 enum token_type {
     UNKNOWN = -1,
@@ -51,15 +51,11 @@ enum token_type {
 struct token {
     token_type type;          // Indica el tipo de token
     std::string_view source;  // Indica la cadena del token en la fuente original
-    
-    token_type peek() const {
-        return type;
-    }
 
     std::string str() const {
         return std::string(source);
     }
-    
+
     const char* data( ) const {
         return source.data( );
     }
@@ -67,6 +63,7 @@ struct token {
     operator token_type() const {
         return type;
     }
+
 }; // end struct token
 
 
@@ -110,25 +107,25 @@ struct lexer {
         std::vector<token> tokens;
         // Para hasta que termines la entrada y cuando el token de parada sea END_OF_INPUT o llegues al token de parada
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
-            // Reconoce la cadena y si falla manda un error de compilador 
+            // Reconoce la cadena y si falla manda un error de compilador
             if( !RE2::FindAndConsumeN(&input, e, m.begin( ), m.size( )) ) {
-		using namespace std::string_literals;
+                using namespace std::string_literals;
                 throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error"s); //
             }
-            // Determina el tipo de token 
+            // Determina el tipo de token
             token_type type = token_type(std::find_if(mt.begin( ), mt.end( ),[](const re2::StringPiece& s){
                 return !s.empty( );
             }) - mt.begin( ));
-            // Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada 
+            // Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada
             if(type < END_OF_INPUT && type != stop) {
                 tokens.push_back({ type, {mt[type].data( ), mt[type].length()} });
             }
         }
-        // Mueve la entrada hasta donde reconociste 
+        // Mueve la entrada hasta donde reconociste
         auto len = (stop != END_OF_INPUT ? mt[stop].length( ) : 0);
         ini = input.data( ) - len;
-        // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada 
-        tokens.push_back({ END_OF_INPUT, {ini, len} }); 
+        // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada
+        tokens.push_back({ END_OF_INPUT, {ini, len} });
         return tokens;
     }
 
