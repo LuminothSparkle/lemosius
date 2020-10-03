@@ -1,2 +1,8 @@
-"prueba.txt": Cannot open or read file
+"prueba.txt":2:17: In file included
+	private include "prueba3.txt";                    ## en este archivo puedes usar los símbolos públicos de una inclusión privada, pero quien te incluya no puede usarlos (private rompe la transitividad) ###
+	                ^
+
+"prueba3.txt":1:36: Syntax Error: Expecting a function declaration
+	operator ! prefix as logical_not;  dfs               ## los símbolos que no se pueden usar en los operadores son . , ; " ( ) [ ] { }
+	                                   ^
 
