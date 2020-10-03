@@ -103,6 +103,17 @@ struct lexer {
         return RE2( join(parts,"|") );
     }
 
+    void set_final_operators(std::vector<std::string_view>&& ops) {
+       std::sort(ops.begin( ), ops.end( ), [](const auto& s1, const auto& s2) {
+          return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch; espero que esté garantizado que el orden de los capturing groups importa
+       });
+
+       token_forms[OPERATOR_L].clear( );
+       for (const auto& op : ops) {
+           token_forms[OPERATOR_L].push_back(RE2::QuoteMeta(op));
+       }
+    }
+
     std::vector<token> analisis(const char*& ini, token_type stop) const  {
         // Genera expresion e inicializa la entrada del mismo
         RE2 e = generate_expresion( );
