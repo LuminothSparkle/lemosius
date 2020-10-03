@@ -24,18 +24,18 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
     }
 
     static unsigned col_of(const token& t, const char* ini) {
-        return 1 + (t.source.begin( ) - std::find(std::reverse_iterator(t.source.begin( )), std::reverse_iterator(ini), '\n').base( ));
+        return 1 + (t.begin( ) - std::find(std::reverse_iterator(t.begin( )), std::reverse_iterator(ini), '\n').base( ));
     }
 
     static std::string_view view_line_of(const token& t, const char* first, const char* last) {
-        auto        data     = std::find(std::reverse_iterator(t.source.begin( )),std::reverse_iterator(first),'\n').base( );
-        std::size_t data_len = std::find(t.source.begin( ),                       last,                        '\n') - data;
+        auto        data     = std::find(std::reverse_iterator(t.begin( )),std::reverse_iterator(first),'\n').base( );
+        std::size_t data_len = std::find(t.begin( ),                       last,                        '\n') - data;
         return { data, data_len };
     }
 
     static std::string_view view_of(const token& t, auto len, const char* fin) {
-    	auto        data     = t.source.begin( );
-    	std::size_t data_len = std::find(t.source.begin( ), std::min(fin - t.source.begin( ),len) + t.source.begin( ), '\n') - t.source.begin( );
+    	auto        data     = t.begin( );
+    	std::size_t data_len = std::find(t.begin( ), std::min(fin - t.begin( ),len) + t.begin( ), '\n') - t.begin( );
         return { data , data_len };
     }
 
@@ -43,7 +43,7 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
         auto obtain_file_data = [&compiled](const token& t) {
             return *std::find_if(compiled.begin(), compiled.end(),
             [&t](const auto& ps){
-                return &ps.second.front() <= t.source.data() && t.source.data() <= &ps.second.back();
+                return &ps.second.front() <= &t.front() && &t.back() <= &ps.second.back();
             });
         };
         std::ostringstream oss;
@@ -53,6 +53,7 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
             oss << file_path.filename() << ":" << line_of(t, file_begin) << ":" << col_of(t, file_begin) << ": " << mes << "\n";
             //oss << "\t" << view_of(t, 10, file_end) << "\n";
             oss << "\t" << view_line_of(t, file_begin, file_end) << "\n";
+            oss << "\t" << std::string(col_of(t, file_begin) - 1,' ') << "^\n";
         }
         what = std::move(oss).str( );
     }
@@ -67,52 +68,53 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
     }
 
     std::string what;
-}; // end struct compiler_error
+};
 
 std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled )
 try {
     path = std::filesystem::absolute(path);
-    if( compiled.find( path ) != compiled.end( ) ) {
+    if( compiled.contains( path ) ) {
         return {};
     }
-    program_resources pr;
-    auto& [src_path, src_file, head_tokens, prog_tokens, tree, inclusions, operators] = pr;
-    src_path = path;
-    src_file = read_file( path );
 
-    compiled.emplace(src_path,src_file);
+    program_resources pr;
+    pr.source_path = path;
+    pr.source_file = read_file( path );
+
+    compiled.try_emplace(pr.source_path,pr.source_file);
 
     try {
-        const char* ini = src_file.data( );
         // Lexico 1
         lexer lex;
-        head_tokens = lex.analisis( ini, PROC_K );
-        token* tok_p = head_tokens.data( );
+        const char* ini  = pr.source_file.data( );
+        pr.header_tokens = lex.analisis( ini, PROC_K );
         // Sintactico 1
-        tree = parse_header( tok_p );
+        token* tok_p   = pr.header_tokens.data( );
+        pr.tree.header = parse_header( tok_p );
         // Compilacion recursiva
-        auto cur_dir = std::filesystem::current_path( );
-        std::filesystem::current_path(path.parent_path( ));
-        for(const auto& inc : tree.includes) {
+        auto old_dir = std::filesystem::current_path( );
+        std::filesystem::current_path( path.parent_path( ) );
+        for( const auto& inc : pr.tree.header.includes ) {
             try {
-                auto res = compile(unquoted_str(inc.file_name), compiled);
-                if(res.has_value( )) {
-                    pr.inclusions.push_back(program_resources::inclusion{is_public(inc), std::move(res).value( )});
+                auto res = compile( unquoted_str(inc.file_name), compiled );
+                if( res.has_value( ) ) {
+                    pr.inclusions.emplace_back( is_public(inc), std::move(res).value( ) );
                 }
             }
             catch(std::stack<compiler_error>& s) {
-                s.push(compiler_error(compiled, std::make_pair(inc.file_name, "In file included")));
+                s.push( compiler_error( compiled, std::make_pair(inc.file_name, "In file included") ) );
                 throw;
             }
         }
-        std::filesystem::current_path(cur_dir);
+        std::filesystem::current_path( old_dir );
         // Semantico 1
-        analyze_operators(pr);
+        pr.operators                = generate_usables_operators( pr.inclusions, pr.tree.header.operators );
+        lex.token_forms[OPERATOR_L] = generate_operator_forms( pr.operators );
         // Lexico 2
-        prog_tokens = lex.analisis( ini, END_OF_INPUT );
-        tok_p = prog_tokens.data( );
+        pr.program_tokens = lex.analisis( ini, END_OF_INPUT );
         // Sintactico 2
-        parse_program(tok_p,tree);
+        tok_p             = pr.program_tokens.data( );
+        pr.tree.functions = parse_program( tok_p );
 
         return pr;
     }
@@ -128,7 +130,7 @@ catch(const std::filesystem::filesystem_error& e) {
 }
 catch(const std::ifstream::failure& e) {
    throw std::stack<compiler_error>({ compiler_error( path, std::make_pair(e, "Cannot open or read file") ) });
-} // end function compile
+}
 
 int main(int argc, char *argv[])
 try {
@@ -150,4 +152,4 @@ catch(const std::exception& e) {
 }
 catch(...) {
    std::cout << "Unknown error\n";
-} // end function main
+}

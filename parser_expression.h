@@ -3,12 +3,48 @@
 
 #include "lexer.h"
 #include "parser_utilities.h"
+<<<<<<< HEAD
 #include <memory>
 #include <vector>
 
 struct expression {
     virtual ~expression( ) = 0;
 };
+=======
+
+#include <memory>
+#include <vector>
+
+// Funciones de prueba para la gramatica
+
+bool is_prefix_operator(const token& t) {
+    return false;
+}
+
+bool is_suffix_operator(const token& t) {
+    return false;
+}
+
+bool is_binary_operator(const token& t) {
+    return t == OPERATOR_L || t == ASSIGNMENT_O;
+}
+
+std::size_t precedence(const token& t) {
+    return 0;
+}
+
+token_type associativity(const token& t) {
+    return t;
+}
+
+// Terminan funciones de prueba para la gramatica
+
+
+struct expression {
+    virtual ~expression( ) = 0;
+};
+
+>>>>>>> master
 expression::~expression( ) = default;
 
 struct terminal_expression : expression {
@@ -47,7 +83,16 @@ std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un ter
       auto res = std::make_unique<call_expression>( );
       res->function_name = *match(t, IDENTIFIER_L);
       match(t, LPARENTHESIS_P);
+<<<<<<< HEAD
       // parsear los parámetros
+=======
+      while(*t != RPARENTHESIS_P) {
+        res->params.push_back(parse_expression(t));
+        if(*t != RPARENTHESIS_P) {
+            match(t, COMMA_P);
+        }
+      }
+>>>>>>> master
       match(t, RPARENTHESIS_P);
       return res;
    } else {
@@ -75,7 +120,11 @@ std::unique_ptr<expression> parse_unary_expression(token*& t) {
    return res;
 }
 
+<<<<<<< HEAD
 std::unique_ptr<expression> parse_binary_expression(token*& t, int min_precedence) {
+=======
+std::unique_ptr<expression> parse_binary_expression(token*& t, std::size_t min_precedence) {
+>>>>>>> master
    auto res = parse_unary_expression(t);
    while (is_binary_operator(*t) && precedence(*t) >= min_precedence) {    // ¿cómo?
       auto prec = precedence(*t); auto assoc = associativity(*t);    // ¿cómo?

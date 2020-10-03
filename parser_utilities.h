@@ -30,7 +30,7 @@ bool is_operator(const token& t) {
 
 auto match_any(const std::initializer_list<token_type>& il) {
    return [&il](token_type t) {
-      return std::find(il.begin(), il.end(), t) != il.end();
+      return std::find( il.begin( ), il.end( ), t ) != il.end( );
    };
 }
 
@@ -40,7 +40,7 @@ token* optional_match(token*& t, P pred) {
 }
 
 token* optional_match(token*& t, token_type type) {
-    return optional_match(t, match_any({ type }));
+    return optional_match( t, match_any({ type }) );
 }
 
 // Template de match con predicado
@@ -50,11 +50,11 @@ token* match(token*& t, P pred, const std::string& mes = "") {
         throw std::make_pair(*t, "Syntax Error: " + mes);
     }
     return t++;
-} // end function match
+}
 
 token* match(token*& t, token_type type, const std::string& mes = "") {
-    return match(t, match_any({ type }), mes);
-} // end function match
+    return match( t, match_any({ type }), mes );
+}
 
 std::string to_string(token* t, const std::string& prefix = "" , const std::string& suffix = "") {
     return (t != nullptr ? prefix + t->str( ) + suffix : "");

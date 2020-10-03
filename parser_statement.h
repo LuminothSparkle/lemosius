@@ -1,15 +1,28 @@
 #ifndef PARSER_STATEMENT_H
 #define PARSER_STATEMENT_H
 
+<<<<<<< HEAD
 #include "lexer.h"
 #include "parser_expression.h"
 #include "parser_utilities.h"
 #include <memory>
 #include <vector>
+=======
+#include"lexer.h"
+#include"parser_expression.h"
+#include"parser_utilities.h"
+
+#include<memory>
+#include<vector>
+>>>>>>> master
 
 struct statement {
     virtual ~statement( ) = 0;
 };
+<<<<<<< HEAD
+=======
+
+>>>>>>> master
 statement::~statement( ) = default;
 
 struct sequence_statement : statement {
@@ -35,9 +48,25 @@ struct return_statement : statement {
     std::unique_ptr<expression> return_value = nullptr;
 };
 
+<<<<<<< HEAD
 
 std::unique_ptr<statement> parse_statement(token*& t);
 
+=======
+std::unique_ptr<statement> parse_statement(token*& t);
+
+auto parse_sequence_statement(token*& t) {
+    auto seq_stmt = std::make_unique<sequence_statement>();
+
+    match(t, LBRACE_P);
+    while(*t != RBRACE_P)
+        seq_stmt->body.push_back( parse_statement(t) );
+    match(t, RBRACE_P);
+
+    return seq_stmt;
+}
+
+>>>>>>> master
 auto parse_expression_statement(token*& t) {
     auto exp_stmt = std::make_unique<expression_statement>();
 
@@ -49,6 +78,7 @@ auto parse_expression_statement(token*& t) {
     return exp_stmt;
 }
 
+<<<<<<< HEAD
 auto parse_sequence_statement(token*& t) {
     auto seq_stmt = std::make_unique<sequence_statement>();
 
@@ -60,6 +90,8 @@ auto parse_sequence_statement(token*& t) {
     return seq_stmt;
 }
 
+=======
+>>>>>>> master
 auto parse_if_statement(token*& t) {
     auto if_stmt = std::make_unique<if_statement>();
 
@@ -81,7 +113,11 @@ auto parse_if_statement(token*& t) {
     }
 
     return if_stmt;
+<<<<<<< HEAD
 } // end function parse_if_statement
+=======
+}
+>>>>>>> master
 
 auto parse_var_statement(token*& t) {
     auto var_decl = std::make_unique<var_statement>();
@@ -94,7 +130,11 @@ auto parse_var_statement(token*& t) {
     match(t, SEMICOLON_P);
 
     return var_decl;
+<<<<<<< HEAD
 } //end function parse_var_statement
+=======
+}
+>>>>>>> master
 
 auto parse_return_statement(token*& t) {
     auto ret_stmt = std::make_unique<return_statement>();
@@ -104,7 +144,11 @@ auto parse_return_statement(token*& t) {
     match(t, SEMICOLON_P);
 
     return ret_stmt;
+<<<<<<< HEAD
 } // end function parse_return_statement
+=======
+}
+>>>>>>> master
 
 std::unique_ptr<statement> parse_statement(token*& t) {
     switch(*t) {
@@ -124,6 +168,12 @@ std::unique_ptr<statement> parse_statement(token*& t) {
             match(t, SEMICOLON_P);
     }
     return std::unique_ptr<statement>(nullptr);
+<<<<<<< HEAD
 } // end function parse_statement
 
 #endif
+=======
+}
+
+#endif // PARSER_STATEMENT_H
+>>>>>>> master
