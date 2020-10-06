@@ -84,7 +84,6 @@ struct token {
 
 };
 
-
 struct lexer {
     std::array<std::vector<std::string>, END_OF_INPUT> token_forms; // Formas que pueden tomar los tokens reconocidos por el lexer
 
@@ -103,7 +102,7 @@ struct lexer {
         return RE2( join(parts,"|") );
     }
 
-    std::vector<token> analisis(const char*& ini, token_type stop) const  {
+    std::vector<token> analisis(const char*& ini, token_type stop, std::string error_mes = "") const  {
         // Genera expresion e inicializa la entrada del mismo
         RE2 e = generate_expresion( );
         re2::StringPiece input( ini );
@@ -119,8 +118,7 @@ struct lexer {
         while( !input.empty( ) && (stop == END_OF_INPUT || mt[stop].empty( )) ) {
             // Reconoce la cadena y si falla manda un error de compilador
             if( !RE2::ConsumeN(&input, e, m.begin( ), m.size( )) ) {
-                using namespace std::string_literals;
-                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error"s);
+                throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error:" + error_mes);
             }
             // Determina el tipo de token
             token_type type = token_type(
@@ -139,6 +137,16 @@ struct lexer {
         // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada
         tokens.push_back({ END_OF_INPUT, {ini, len} });
         return tokens;
+    }
+
+    void set_final_operators(std::vector<std::string_view>&& ops) {
+        std::sort(ops.begin( ), ops.end( ), [](const auto& s1, const auto& s2) {
+            return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch
+        });
+        token_forms[OPERATOR_L].clear( );
+        for (const auto& op : ops) {
+            token_forms[OPERATOR_L].push_back(RE2::QuoteMeta(op));
+        }
     }
 
     lexer( ) {

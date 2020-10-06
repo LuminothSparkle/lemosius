@@ -5,11 +5,10 @@
 #include"parser.h"
 #include"semantic_utilities.h"
 
-#include<re2/re2.h>
-
 #include<vector>
 #include<filesystem>
-#include<set>
+#include<unordered_map>
+#include<map>
 #include<utility>
 #include<string>
 #include<algorithm>
@@ -18,7 +17,8 @@
 
 struct program_resources {
     struct inclusion;
-    using usable_operators = std::unordered_map<operator_declaration,bool,hash_operator_declaration>;
+    struct visible_operator;
+    struct visible_function;
 
     std::filesystem::path source_path;
     std::vector<char>     source_file;
@@ -27,7 +27,8 @@ struct program_resources {
     syntax_tree           tree;
 
     std::vector<inclusion> inclusions;
-    usable_operators       operators;
+    std::unordered_map<std::string_view, std::map<token_type,  visible_operator>> operator_overloads;
+    std::unordered_map<std::string_view, std::map<std::size_t, visible_function>> function_overloads;
 };
 
 struct program_resources::inclusion {
@@ -35,46 +36,49 @@ struct program_resources::inclusion {
     program_resources resources;
 };
 
+struct program_resources::visible_operator {
+   bool                 access;
+   operator_declaration declaration;
+};
+
+struct program_resources::visible_function {
+   bool                 access;
+   function_declaration declaration;
+};
+
 auto generate_usables_operators(const std::vector<program_resources::inclusion>& incs, const std::vector<operator_declaration>& ops) {
-    program_resources::usable_operators usables;
-    std::map<std::pair<std::string,token_type>,token> overloads;
-    auto check_overload = [&overloads](const operator_declaration& op) {
-        auto [it, is_inserted] = overloads.try_emplace(std::make_pair(op.symbol.str(), op.position.type),op.symbol);
-        if(!is_inserted) {
+    decltype(program_resources::operator_overloads) overloads;
+    auto create_overload = [&overloads] (bool access, const operator_declaration& op) {
+       const auto& [it, is_inserted] = overloads[op.symbol.source].emplace(op.position.type, program_resources::visible_operator{access, op});
+       if(!is_inserted) {
             using namespace std::string_literals;
             throw std::vector<std::pair<token,std::string>>({
-                    std::make_pair(op.symbol,  "Operator overload already defined"s),
-                    std::make_pair(it->second, "Previously defined"s)
+                std::make_pair(op.symbol,                     "Operator overload already defined"s),
+                std::make_pair(it->second.declaration.symbol, "Previously defined"s)
             });
-        }
+       }
     };
     for(const auto& [inc_access, inc_pr] : incs) {
-        for(const auto& [decl, op_access] : inc_pr.operators) {
-            check_overload(decl);
-            usables.try_emplace(decl, op_access && inc_access);
+        for(const auto& [str_view, overload] : inc_pr.operator_overloads) {
+            for(const auto& [pos, visible_op] : overload) {
+                if(visible_op.access) {
+                    create_overload(inc_access, visible_op.declaration);
+                }
+            }
         }
     }
     for(const auto& op : ops) {
-        check_overload(op);
-        usables.try_emplace(op, is_public(op));
+        create_overload(is_public(op), op);
     }
-    return usables;
+    return overloads;
 }
 
-auto generate_operator_forms(const program_resources::usable_operators& ops) {
-    auto compare = [](const auto& s1, const auto& s2) {
-        return s1.size() > s2.size() || s1 < s2;    // Los operadores largos tienen prioridad de identificarse que los cortos
-    };                                              // por ejemplo ++ puede ser visto como dos operadores + y creo que eso genera más problemas
-    std::set<std::string,decltype(compare)> set_forms;
-    std::transform(ops.begin(), ops.end(), std::inserter(set_forms,set_forms.begin()),
-    [](const auto& pair_op){
-        return RE2::QuoteMeta(pair_op.first.symbol.str());
-    });
-    std::vector<std::string> forms;
-    while(!set_forms.empty()) {
-        forms.push_back(std::move(set_forms.extract(set_forms.begin()).value()));
+auto get_operator_views(const decltype(program_resources::operator_overloads)& overloads) {
+    std::vector<std::string_view> res;
+    for(const auto& [str_view, overload] : overloads) {
+        res.push_back(str_view);
     }
-    return forms;
+    return res;
 }
 
 #endif

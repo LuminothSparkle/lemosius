@@ -1,7 +1,7 @@
-"prueba3.txt":6:18: Operator overload already defined
-	private operator + prefix as plus;               ## los operadores también pueden ser privados ssdada
-	                 ^
-"prueba2.txt":6:18: Previously defined
-	private operator + prefix as plus;               ## los operadores también pueden ser privados
-	                 ^
+"prueba3.txt":5:10: Operator overload already defined
+	operator # infix (right 4) as something; 
+	         ^
+"prueba2.txt":5:10: Previously defined
+	operator # infix (right 4) as something; 
+	         ^
 

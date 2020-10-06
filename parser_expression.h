@@ -59,13 +59,13 @@ struct binary_expression : expression {
 };
 
 struct call_expression : expression {
-   token function_name;       // como sólo tenemos números como tipos, la llamada a función debe ser f(params) con f identificador
+   token function_name;       // como sÃ³lo tenemos nÃºmeros como tipos, la llamada a funciÃ³n debe ser f(params) con f identificador
    std::vector<std::unique_ptr<expression>> params;                 // para simplificar la vida, no hay que permitir (f)(params)
 };
 
 std::unique_ptr<expression> parse_expression(token*& t);
 
-std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un terminal_expression, una expresión envuelta en ( ) o una llamada a función
+std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un terminal_expression, una expresiÃ³n envuelta en ( ) o una llamada a funciÃ³n
    if (*t == LPARENTHESIS_P) {
       auto res = parse_expression(t);
       match(t, RPARENTHESIS_P);
@@ -90,7 +90,7 @@ std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un ter
 }
 
 std::unique_ptr<expression> parse_unary_expression(token*& t) {
-   if (is_prefix_operator(*t)) {          // ¿cómo?
+   if (is_prefix_operator(*t)) {          // Â¿cÃ³mo?
       auto res = std::make_unique<prefix_expression>( );
       res->op = *match(t, is_prefix_operator);
       res->ex = parse_expression(t);
@@ -98,7 +98,7 @@ std::unique_ptr<expression> parse_unary_expression(token*& t) {
    }
 
    auto res = parse_primary_expression(t);
-   while (is_suffix_operator(*t)) {       // ¿cómo?
+   while (is_suffix_operator(*t)) {       // Â¿cÃ³mo?
       auto temp = std::make_unique<suffix_expression>( );
       temp->ex = std::move(res);
       temp->op = *match(t, is_suffix_operator);
@@ -109,8 +109,8 @@ std::unique_ptr<expression> parse_unary_expression(token*& t) {
 
 std::unique_ptr<expression> parse_binary_expression(token*& t, std::size_t min_precedence) {
    auto res = parse_unary_expression(t);
-   while (is_binary_operator(*t) && precedence(*t) >= min_precedence) {    // ¿cómo?
-      auto prec = precedence(*t); auto assoc = associativity(*t);    // ¿cómo?
+   while (is_binary_operator(*t) && precedence(*t) >= min_precedence) {    // Â¿cÃ³mo?
+      auto prec = precedence(*t); auto assoc = associativity(*t);    // Â¿cÃ³mo?
       auto temp = std::make_unique<binary_expression>( );
       temp->ex1 = std::move(res);
       temp->op = *match(t, is_binary_operator);
@@ -121,7 +121,7 @@ std::unique_ptr<expression> parse_binary_expression(token*& t, std::size_t min_p
 }
 
 std::unique_ptr<expression> parse_expression(token*& t) {
-   return parse_binary_expression(t, 0);        // suponiendo que 0 fuera la precedencia más pequeña que se acepte; ¿qué valores aceptaremos como precedencias?
+   return parse_binary_expression(t, 0);        // suponiendo que 0 fuera la precedencia mÃ¡s pequeÃ±a que se acepte; Â¿quÃ© valores aceptaremos como precedencias?
 }
 
 #endif

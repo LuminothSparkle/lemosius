@@ -108,9 +108,9 @@ try {
         }
         std::filesystem::current_path( old_dir );
         // Semantico 1
-        pr.operators                = generate_usables_operators( pr.inclusions, pr.tree.header.operators );
-        lex.token_forms[OPERATOR_L] = generate_operator_forms( pr.operators );
+        pr.operator_overloads = generate_usables_operators(pr.inclusions, pr.tree.header.operators);
         // Lexico 2
+        lex.set_final_operators( std::move(get_operator_views(pr.operator_overloads)) );
         pr.program_tokens = lex.analisis( ini, END_OF_INPUT );
         // Sintactico 2
         tok_p             = pr.program_tokens.data( );

@@ -29,15 +29,4 @@ std::string join(Container C, const char* sep = "", const char* prefix = "", con
     return join(C.begin(),C.end(),sep,prefix,suffix);
 }
 
-/*
-std::string join(const std::vector<std::string>& v, const char* sep = "", const char* prefix = "", const char* suffix = "") {
-    std::string res = prefix;
-    for(auto it = v.begin(); it != v.end(); ++it) {
-        res += *it + (std::next(it) != v.end() ? sep : suffix);
-    }
-    return res;
-};
-*/
-
-
 #endif // STRING_UTILITIES_H
