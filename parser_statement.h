@@ -50,17 +50,6 @@ auto parse_sequence_statement(token*& t) {
     return seq_stmt;
 }
 
-auto parse_expression_statement(token*& t) {
-    auto exp_stmt = std::make_unique<expression_statement>();
-
-    if(*t != SEMICOLON_P) {
-        exp_stmt->body = parse_expression(t);
-    }
-    match(t, SEMICOLON_P);
-
-    return exp_stmt;
-}
-
 auto parse_if_statement(token*& t) {
     auto if_stmt = std::make_unique<if_statement>();
 
@@ -105,6 +94,17 @@ auto parse_return_statement(token*& t) {
     match(t, SEMICOLON_P);
 
     return ret_stmt;
+}
+
+auto parse_expression_statement(token*& t) {
+    auto exp_stmt = std::make_unique<expression_statement>();
+
+    if(*t != SEMICOLON_P) {
+        exp_stmt->body = parse_expression(t);
+    }
+    match(t, SEMICOLON_P);
+
+    return exp_stmt;
 }
 
 std::unique_ptr<statement> parse_statement(token*& t) {

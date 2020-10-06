@@ -23,11 +23,6 @@ bool is_literal(const token& t) {
    return t == IDENTIFIER_L || t == NUMBER_L;
 }
 
-//Aun por modificar y solo hecho para probar la gramatica.
-bool is_operator(const token& t) {
-    return t == OPERATOR_L || t == ASSIGNMENT_O;
-}
-
 auto match_any(const std::initializer_list<token_type>& il) {
    return [&il](token_type t) {
       return std::find( il.begin( ), il.end( ), t ) != il.end( );

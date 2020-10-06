@@ -59,13 +59,13 @@ struct binary_expression : expression {
 };
 
 struct call_expression : expression {
-   token function_name;       // como s�lo tenemos n�meros como tipos, la llamada a funci�n debe ser f(params) con f identificador
+   token function_name;       // como sólo tenemos números como tipos, la llamada a función debe ser f(params) con f identificador
    std::vector<std::unique_ptr<expression>> params;                 // para simplificar la vida, no hay que permitir (f)(params)
 };
 
 std::unique_ptr<expression> parse_expression(token*& t);
 
-std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un terminal_expression, una expresi�n envuelta en ( ) o una llamada a funci�n
+std::unique_ptr<expression> parse_primary_expression(token*& t) {      // un terminal_expression, una expresión envuelta en ( ) o una llamada a función
    if (*t == LPARENTHESIS_P) {
       auto res = parse_expression(t);
       match(t, RPARENTHESIS_P);
@@ -121,7 +121,7 @@ std::unique_ptr<expression> parse_binary_expression(token*& t, std::size_t min_p
 }
 
 std::unique_ptr<expression> parse_expression(token*& t) {
-   return parse_binary_expression(t, 0);        // suponiendo que 0 fuera la precedencia m�s peque�a que se acepte; �qu� valores aceptaremos como precedencias?
+   return parse_binary_expression(t, 0);        // suponiendo que 0 fuera la precedencia más pequeña que se acepte; ¿qué valores aceptaremos como precedencias?
 }
 
 #endif
