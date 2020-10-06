@@ -114,7 +114,7 @@ try {
         pr.program_tokens = lex.analisis( ini, END_OF_INPUT );
         // Sintactico 2
         tok_p             = pr.program_tokens.data( );
-        pr.tree.functions = parse_program( tok_p );
+        pr.tree.functions = parse_program( tok_p, operator_map(get_operator_decls(pr.operator_overloads)) );
 
         return pr;
     }

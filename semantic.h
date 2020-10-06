@@ -5,6 +5,7 @@
 #include"parser.h"
 #include"semantic_utilities.h"
 
+#include<cstdint>
 #include<vector>
 #include<filesystem>
 #include<unordered_map>
@@ -48,10 +49,10 @@ struct program_resources::visible_function {
 
 auto generate_usables_operators(const std::vector<program_resources::inclusion>& incs, const std::vector<operator_declaration>& ops) {
     decltype(program_resources::operator_overloads) overloads;
+    using namespace std::string_literals;
     auto create_overload = [&overloads] (bool access, const operator_declaration& op) {
        const auto& [it, is_inserted] = overloads[op.symbol.source].emplace(op.position.type, program_resources::visible_operator{access, op});
        if(!is_inserted) {
-            using namespace std::string_literals;
             throw std::vector<std::pair<token,std::string>>({
                 std::make_pair(op.symbol,                     "Operator overload already defined"s),
                 std::make_pair(it->second.declaration.symbol, "Previously defined"s)
@@ -68,6 +69,9 @@ auto generate_usables_operators(const std::vector<program_resources::inclusion>&
         }
     }
     for(const auto& op : ops) {
+        if (op.precedence != nullptr && !get_representation<std::int32_t>(op.precedence->source).second) {
+           throw std::make_pair(*op.precedence, "Semantic Error: An operator precedence must be an integer between 0 to 4294967295"s );
+        }
         create_overload(is_public(op), op);
     }
     return overloads;
@@ -77,6 +81,16 @@ auto get_operator_views(const decltype(program_resources::operator_overloads)& o
     std::vector<std::string_view> res;
     for(const auto& [str_view, overload] : overloads) {
         res.push_back(str_view);
+    }
+    return res;
+}
+
+auto get_operator_decls(const decltype(program_resources::operator_overloads)& overloads) {
+    std::vector<operator_declaration> res;
+    for(const auto& [str_view, overload] : overloads) {
+        for(const auto& [pos, visible_op] : overload) {
+           res.push_back(visible_op.declaration);
+        }
     }
     return res;
 }

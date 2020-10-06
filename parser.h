@@ -71,6 +71,21 @@ struct syntax_tree {
     std::vector<function_declaration> functions;
 };
 
+struct operator_map {
+   operator_map(const std::vector<operator_declaration>& ops) {
+      // inicializar la cosa
+   }
+
+   /*bool is_cosa(cosa) const {
+
+   }
+
+   std::uint64_t precedence(cosa) const {       // 64 aqui para que el algoritmo de precedence climbing pueda sumar sin miedo
+
+   }
+   */
+};
+
 auto parse_header(token*& t) {
     syntax_tree::header_declarations hd;
     auto& [incs, ops] = hd;
@@ -109,7 +124,7 @@ auto parse_header(token*& t) {
     return hd;
 }
 
-auto parse_program(token*& t) {
+auto parse_program(token*& t, const operator_map& opm) {       // el tipo real aquí, const auto& en expression.h
     std::vector<function_declaration> funcs;
 
     while( *t == PROC_K || (is_access(*t) && *(t + 1) == PROC_K) ) {
