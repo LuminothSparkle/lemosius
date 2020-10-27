@@ -68,6 +68,9 @@ auto generate_usables_operators(const std::vector<program_resources::inclusion>&
         }
     }
     for(const auto& op : ops) {
+        if(op.precedence != nullptr) {
+            get_representation<std::int32_t>(*op.precedence,"An operator precedence must be an integer between 0 to 4294967295");
+        }
         create_overload(is_public(op), op);
     }
     return overloads;
@@ -80,5 +83,17 @@ auto get_operator_views(const decltype(program_resources::operator_overloads)& o
     }
     return res;
 }
+
+auto get_operator_decls(const decltype(program_resources::operator_overloads)& overloads) {
+    std::vector<operator_declaration> res;
+    for(const auto& [str_view, overload] : overloads) {
+        for(const auto& [pos, visible_op] : overload) {
+           res.push_back(visible_op.declaration);
+        }
+    }
+    return res;
+}
+
+
 
 #endif
