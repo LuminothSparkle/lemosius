@@ -3,8 +3,8 @@
 
 #include"lexer.h"
 #include"parser_utilities.h"
-#include"string_utilities.h"
 #include"parser_statement.h"
+#include"string_utilities.h"
 
 #include<utility>
 #include<memory>
@@ -15,11 +15,7 @@ struct include_declaration {
     token  file_name;
 
     std::string str() const {
-        std::string decl = to_string(access,""," ");
-        decl.append("include ");
-        decl.append(file_name.str( ));
-        decl.append(";");
-        return decl;
+        return to_string(access,""," ") + to_string(file_name,"include ",";");
     }
 };
 
@@ -27,19 +23,16 @@ struct operator_declaration {
     token* access       = nullptr;
     token  symbol;
     token  position;
-    token* asociativity = nullptr;
+    token* associativity = nullptr;
     token* precedence   = nullptr;
     token  function;
 
     std::string str() const {
         std::string decl = to_string(access,""," ");
-        decl.append("operator ");
-        decl.append(symbol.str( ));
-        decl.append(position.str( ));
-        decl.append(position == INFIX_K ? to_string(asociativity,"(") + to_string(precedence," ",")") : "");
-        decl.append(" as ");
-        decl.append(function.str( ));
-        decl.append(";");
+        decl.append(to_string(symbol,"operator "));
+        decl.append(to_string(position));
+        decl.append(position == INFIX_K ? to_string(associativity,"(") + to_string(precedence," ",")") : "");
+        decl.append(to_string(function," as ",";"));
         return decl;
     }
 };
@@ -50,15 +43,10 @@ struct function_declaration {
     std::vector<token>                  parameters;
     std::unique_ptr<sequence_statement> body;
 
-    std::string str() {
-        std::string decl = to_string(access,""," ");
-        decl.append("proc ");
-        decl.append(name.str( ));
-        decl.append( transform_join(parameters,
-        [](const token& t){
-            return t.str();
-        },",","(",");") );
-        return decl;
+    std::string str() const {
+        return to_string(access,""," ") + to_string(name,"proc ") + transform_join(parameters,[](const auto& s){
+            return to_string(s);
+        },",","(",");");
     }
 };
 
@@ -94,7 +82,7 @@ auto parse_header(token*& t) {
         op.position = *match( t, is_position, "Expecting infix, prefix or suffix" );
         if(op.position == INFIX_K) {
             match( t, LPARENTHESIS_P, "Expecting (" );
-            op.asociativity = match( t, is_asociativity, "Expecting left or right" );
+            op.associativity = match( t, is_associativity, "Expecting left or right" );
             op.precedence   = match( t, NUMBER_L, "Expecting a number literal" );
             match( t, RPARENTHESIS_P, "Expecting )" );
         }
@@ -109,7 +97,7 @@ auto parse_header(token*& t) {
     return hd;
 }
 
-auto parse_program(token*& t) {
+auto parse_program(token*& t, const auto& opm) {
     std::vector<function_declaration> funcs;
 
     while( *t == PROC_K || (is_access(*t) && *(t + 1) == PROC_K) ) {
@@ -127,7 +115,7 @@ auto parse_program(token*& t) {
         }
         match( t, RPARENTHESIS_P );
         // Parsea las demas sentencias de la funcion
-        func_def.body = parse_sequence_statement(t);
+        func_def.body = parse_sequence_statement(t,opm);
         // Inserta la funcion al arbol.
         funcs.push_back( std::move(func_def) );
     }
