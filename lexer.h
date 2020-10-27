@@ -82,6 +82,10 @@ struct token {
         return type;
     }
 
+    operator std::string_view() const {
+        return source;
+    }
+
 };
 
 struct lexer {
