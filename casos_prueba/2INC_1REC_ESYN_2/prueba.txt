@@ -29,10 +29,10 @@ proc f(a, b) {
 }
 
 proc fib(n) {
-   if(n) {          ## error de compilación: <= no está definido
+   if(n <= 1) {          ## error de compilación: <= no está definido
       return n;
    } else {
-      return fib(n + 1) + fib(n + 2);
+      return fib(n - 1) + fib(n - 2);
    }
 }
 
@@ -41,6 +41,6 @@ private proc g( ) {     ## este archivo puede usar los símbolos privados, pero 
 }
 
 proc h( ) {
-   return 2 + g( );     ## error de compilación: * no está definido
+   return 2 * g( );     ## error de compilación: * no está definido
 }
 
