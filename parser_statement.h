@@ -60,9 +60,9 @@ struct return_statement : statement {
     }
 };
 
-std::unique_ptr<statement> parse_statement(token*& t);
+std::unique_ptr<statement> parse_statement(token*& t, const operator_map& opm);
 
-auto parse_sequence_statement(token*& t, const auto& opm) {
+auto parse_sequence_statement(token*& t, const operator_map& opm) {
     auto seq_stmt = std::make_unique<sequence_statement>();
 
     match(t, LBRACE_P, "Expecting {");
@@ -73,7 +73,7 @@ auto parse_sequence_statement(token*& t, const auto& opm) {
     return seq_stmt;
 }
 
-auto parse_if_statement(token*& t, const auto& opm) {
+auto parse_if_statement(token*& t, const operator_map& opm) {
     auto if_stmt = std::make_unique<if_statement>();
 
     match(t, IF_K, "Expecting if");
@@ -96,7 +96,7 @@ auto parse_if_statement(token*& t, const auto& opm) {
     return if_stmt;
 }
 
-auto parse_var_statement(token*& t, const auto& opm) {
+auto parse_var_statement(token*& t, const operator_map& opm) {
     auto var_decl = std::make_unique<var_statement>();
 
     match(t, VAR_K, "Expecting var");
@@ -109,7 +109,7 @@ auto parse_var_statement(token*& t, const auto& opm) {
     return var_decl;
 }
 
-auto parse_return_statement(token*& t, const auto& opm) {
+auto parse_return_statement(token*& t, const operator_map& opm) {
     auto ret_stmt = std::make_unique<return_statement>();
 
     match(t, RETURN_K, "Expecting return");
@@ -119,7 +119,7 @@ auto parse_return_statement(token*& t, const auto& opm) {
     return ret_stmt;
 }
 
-auto parse_expression_statement(token*& t, const auto& opm) {
+auto parse_expression_statement(token*& t, const operator_map& opm) {
     auto exp_stmt = std::make_unique<expression_statement>();
 
     if(*t != SEMICOLON_P) {
@@ -130,7 +130,7 @@ auto parse_expression_statement(token*& t, const auto& opm) {
     return exp_stmt;
 }
 
-std::unique_ptr<statement> parse_statement(token*& t, const auto& opm) {
+std::unique_ptr<statement> parse_statement(token*& t, const operator_map& opm) {
     switch(*t) {
         case LBRACE_P:
             return parse_sequence_statement(t,opm);
