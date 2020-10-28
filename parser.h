@@ -97,9 +97,9 @@ auto parse_header(token*& t) {
     return hd;
 }
 
-auto parse_program(token*& t, const auto& vis_op_decls) {
+auto parse_program(token*& t, const std::vector<operator_declaration>& op_decls) {
     std::vector<function_declaration> funcs;
-    operator_map opm(vis_op_decls);
+    operator_map opm(op_decls);
 
     while( *t == PROC_K || (is_access(*t) && *(t + 1) == PROC_K) ) {
         function_declaration func_def;
