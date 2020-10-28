@@ -54,9 +54,9 @@ struct call_expression : expression {
     }
 };
 
-std::unique_ptr<expression> parse_expression(token*& t);
+std::unique_ptr<expression> parse_expression(token*& t, const operator_map& opm);
 
-std::unique_ptr<expression> parse_primary_expression(token*& t, const auto& opm) {      // un terminal_expression, una expresión envuelta en ( ) o una llamada a función
+std::unique_ptr<expression> parse_primary_expression(token*& t, const operator_map& opm) {      // un terminal_expression, una expresión envuelta en ( ) o una llamada a función
     if (*t == LPARENTHESIS_P) {
         match(t, LPARENTHESIS_P);
         auto res = parse_expression(t,opm);
