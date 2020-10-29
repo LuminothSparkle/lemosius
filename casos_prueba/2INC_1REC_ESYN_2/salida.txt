@@ -1,0 +1,4 @@
+"prueba.txt":32:9: Lexic Error
+	   if(n <= 1) {          ## error de compilación: <= no está definido
+	        ^
+

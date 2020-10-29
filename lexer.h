@@ -82,6 +82,10 @@ struct token {
         return type;
     }
 
+    operator std::string_view() const {
+        return source;
+    }
+
 };
 
 struct lexer {
@@ -139,7 +143,7 @@ struct lexer {
         return tokens;
     }
 
-    void set_final_operators(std::vector<std::string_view>&& ops) {
+    void overwrite_operators(std::vector<std::string_view>&& ops) {
         std::sort(ops.begin( ), ops.end( ), [](const auto& s1, const auto& s2) {
             return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch
         });

@@ -3,8 +3,8 @@
 
 #include"lexer.h"
 #include"parser_utilities.h"
-#include"string_utilities.h"
 #include"parser_statement.h"
+#include"string_utilities.h"
 
 #include<utility>
 #include<memory>
@@ -15,11 +15,7 @@ struct include_declaration {
     token  file_name;
 
     std::string str() const {
-        std::string decl = to_string(access,""," ");
-        decl.append("include ");
-        decl.append(file_name.str( ));
-        decl.append(";");
-        return decl;
+        return to_string(access,""," ") + to_string(file_name,"include ",";");
     }
 };
 
@@ -27,19 +23,16 @@ struct operator_declaration {
     token* access       = nullptr;
     token  symbol;
     token  position;
-    token* asociativity = nullptr;
+    token* associativity = nullptr;
     token* precedence   = nullptr;
     token  function;
 
     std::string str() const {
         std::string decl = to_string(access,""," ");
-        decl.append("operator ");
-        decl.append(symbol.str( ));
-        decl.append(position.str( ));
-        decl.append(position == INFIX_K ? to_string(asociativity,"(") + to_string(precedence," ",")") : "");
-        decl.append(" as ");
-        decl.append(function.str( ));
-        decl.append(";");
+        decl.append(to_string(symbol,"operator "));
+        decl.append(to_string(position));
+        decl.append(position == INFIX_K ? to_string(associativity,"(") + to_string(precedence," ",")") : "");
+        decl.append(to_string(function," as ",";"));
         return decl;
     }
 };
@@ -50,15 +43,10 @@ struct function_declaration {
     std::vector<token>                  parameters;
     std::unique_ptr<sequence_statement> body;
 
-    std::string str() {
-        std::string decl = to_string(access,""," ");
-        decl.append("proc ");
-        decl.append(name.str( ));
-        decl.append( transform_join(parameters,
-        [](const token& t){
-            return t.str();
-        },",","(",");") );
-        return decl;
+    std::string str() const {
+        return to_string(access,""," ") + to_string(name,"proc ") + transform_join(parameters,[](const auto& s){
+            return to_string(s);
+        },",","(",");");
     }
 };
 
@@ -69,21 +57,6 @@ struct syntax_tree {
     };
     header_declarations               header;
     std::vector<function_declaration> functions;
-};
-
-struct operator_map {
-   operator_map(const std::vector<operator_declaration>& ops) {
-      // inicializar la cosa
-   }
-
-   /*bool is_cosa(cosa) const {
-
-   }
-
-   std::uint64_t precedence(cosa) const {       // 64 aqui para que el algoritmo de precedence climbing pueda sumar sin miedo
-
-   }
-   */
 };
 
 auto parse_header(token*& t) {
@@ -109,7 +82,7 @@ auto parse_header(token*& t) {
         op.position = *match( t, is_position, "Expecting infix, prefix or suffix" );
         if(op.position == INFIX_K) {
             match( t, LPARENTHESIS_P, "Expecting (" );
-            op.asociativity = match( t, is_asociativity, "Expecting left or right" );
+            op.associativity = match( t, is_associativity, "Expecting left or right" );
             op.precedence   = match( t, NUMBER_L, "Expecting a number literal" );
             match( t, RPARENTHESIS_P, "Expecting )" );
         }
@@ -124,8 +97,9 @@ auto parse_header(token*& t) {
     return hd;
 }
 
-auto parse_program(token*& t, const operator_map& opm) {       // el tipo real aquí, const auto& en expression.h
+auto parse_program(token*& t, const std::vector<operator_declaration>& op_decls) {
     std::vector<function_declaration> funcs;
+    operator_map opm(op_decls);
 
     while( *t == PROC_K || (is_access(*t) && *(t + 1) == PROC_K) ) {
         function_declaration func_def;
@@ -142,7 +116,7 @@ auto parse_program(token*& t, const operator_map& opm) {       // el tipo real a
         }
         match( t, RPARENTHESIS_P );
         // Parsea las demas sentencias de la funcion
-        func_def.body = parse_sequence_statement(t);
+        func_def.body = parse_sequence_statement(t,opm);
         // Inserta la funcion al arbol.
         funcs.push_back( std::move(func_def) );
     }

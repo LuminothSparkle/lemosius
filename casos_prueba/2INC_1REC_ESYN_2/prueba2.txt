@@ -1,0 +1,2 @@
+operator # infix (right 4) as something; 
+private operator + prefix as plus;               ## los operadores también pueden ser  privados
