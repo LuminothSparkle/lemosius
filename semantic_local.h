@@ -10,50 +10,38 @@
 #include<typeinfo>
 
 class current_scope {
-   std::list<std::unordered_set<std::string_view>>& list;               // debería ser una pila, pero nos preocuparemos menos haciéndolo así
-   std::list<std::unordered_set<std::string_view>>::iterator iter;      // el ámbito más interno será el primero elemento de la lista; éste es el iterador al nuestro
-   const decltype(program_resources::function_overloads)& function_overloads;
-
-   current_scope(std::list<std::unordered_set<std::string_view>>& li, const decltype(program_resources::function_overloads)& f, std::list<std::unordered_set<std::string_view>>::iterator it)
-   : list(li), function_overloads(f), iter(li.emplace(it)) {
-   }
+   current_scope* parent;
+   std::unordered_map<std::string_view, token*> variables;
+   const std::unordered_map<std::string_view, std::map<std::size_t, visible_function>>& function_overloads;
 
 public:
-   using scope_list = std::list<std::unordered_set<std::string_view>>;
-
-   current_scope(std::list<std::unordered_set<std::string_view>>& li, const decltype(program_resources::function_overloads)& f)
-   : current_scope(li, f, li.end( )) {
+   current_scope(const decltype(program_resources::function_overloads)& f)
+   : parent(nullptr), function_overloads(f) {
    }
 
-   ~current_scope( ) {
-      list.erase(iter);
-   }
-
-   auto emplace_next_scope( ) {
-      return current_scope(list, function_overloads, iter);
+   current_scope(current_scope* p)     // no puede ser nulo (deberÃ­a ser referencia, pero no quiero que haya ambigÃ¼edad con un constructor por copia)
+   : parent(p), function_overloads(p->function_overloads) {
    }
 
    bool try_declare(std::string_view s) {
-      // intentar declarar en *iter
+      // intentar declarar en .variables
    }
 
    std::pair<token*, token_type> find_symbol(std::string_view s) {
-      // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
-      // 1) no existe el símbolo (regresamos nullptr)
-      // 2) sí existe el símbolo y sí es variable
-      // 3) sí existe el símbolo pero es una función
-      for (auto i = iter; i != list.end( ); ++i) {
-         // buscar en *i
-      }
-      // buscar en function_overloads;
+      // generalmente vamos a usar esta funciÃ³n para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
+      // 1) no existe el sÃ­mbolo (regresamos nullptr)
+      // 2) sÃ­ existe el sÃ­mbolo y sÃ­ es variable
+      // 3) sÃ­ existe el sÃ­mbolo pero es una funciÃ³n
+      // el token apunta al identificador de la variable; el token_type lo construimos nosotros (NUMBER o FUNCTION) dependiendo si es o no variable
+
+      // buscar en las variables del nivel actual
+      // si no estÃ¡ entonces hacemos recursiÃ³n con el padre
+      // si no tenemos padre entonces buscamos en las funciones
    }
 
    // nulo si no la encontramos
    operator_declaration* find_function(std::string_view s, std::size_t arity) {
-      for (auto i = iter; i != list.end( ); ++i) {
-         // buscar que ningún identificador de *i la oculte
-      }
-      // buscar en function_overloads
+      // buscar que no estÃ© oculta por una variable
    }
 };
 
@@ -79,7 +67,7 @@ void analyze_expression(const call_expression& e, const program_resources& pr, c
 
 }
 
-void analyze_expression(const statement& e, const program_resources& pr, current_scope& scope) {         // sí, if else if !
+void analyze_expression(const statement& e, const program_resources& pr, current_scope& scope) {         // sÃ­, if else if !
    if (typeid(e) == typeid(terminal_expression)) {
       return analyze_expression(dynamic_cast<const terminal_expression&>(e), pr, scope);
    } else if (typeid(e) == typeid(prefix_expression)) {
@@ -104,15 +92,15 @@ void analyze_statement(const expression_statement& s, const program_resources& p
 }
 
 void analyze_statement(const if_statement& s, const program_resources& pr, current_scope& scope) {
-   // analizar la condición
+   // analizar la condiciÃ­n
    parse_si: {
-      auto inner = scope.emplace_next_scope( );
-      // enviar inner a la recursión
+      current inner(&scope);
+      // enviar inner a la recursiÃ­n
    }
 
    parte_no: {
-      auto inner = scope.emplace_next_scope( );
-      // enviar inner a la recursión
+      current inner(&scope);
+      // enviar inner a la recursiÃ­n
    }
 }
 
@@ -120,7 +108,7 @@ void analyze_statement(const var_statement& s, const program_resources& pr, curr
 
 }
 
-void analyze_statement(const statement& s, const program_resources& pr, current_scope& scope) {        // sí, if else if !
+void analyze_statement(const statement& s, const program_resources& pr, current_scope& scope) {        // sÃ­, if else if !
    if (typeid(s) == typeid(sequence_statement)) {
       return analyze_statement(dynamic_cast<const sequence_statement&>(s), pr, scope);
    } else if (typeid(s) == typeid(expression_statement)) {
@@ -138,8 +126,7 @@ void analyze_function(const function_declaration& f, const program_resources& pr
 }
 
 void analyze_program(const syntax_tree& tree, const program_resources& pr) {
-   current_scope::scope_list list;
-   current_scope scope(list, pr.function_overloads);
+   current_scope scope(pr.function_overloads);
    for (const auto& f : tree.functions) {
       analyze_function(f, pr, scope);
    }
