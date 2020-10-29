@@ -92,15 +92,15 @@ void analyze_statement(const expression_statement& s, const program_resources& p
 }
 
 void analyze_statement(const if_statement& s, const program_resources& pr, current_scope& scope) {
-   // analizar la condiciín
+   // analizar la condición
    parse_si: {
       current_scope inner(&scope);
-      // enviar inner a la recursiín
+      // enviar inner a la recursión
    }
 
    parte_no: {
       current_scope inner(&scope);
-      // enviar inner a la recursiín
+      // enviar inner a la recursión
    }
 }
 
