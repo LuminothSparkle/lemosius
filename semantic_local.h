@@ -12,7 +12,7 @@
 class current_scope {
    current_scope* parent;
    std::unordered_map<std::string_view, token*> variables;
-   const std::unordered_map<std::string_view, std::map<std::size_t, visible_function>>& function_overloads;
+   const std::unordered_map<std::string_view, std::map<std::size_t, program_resources::visible_function>>& function_overloads;
 
 public:
    current_scope(const decltype(program_resources::function_overloads)& f)
