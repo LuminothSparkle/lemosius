@@ -11,22 +11,26 @@
 
 class current_scope {
    std::list<std::unordered_set<std::string_view>>& list;               // debería ser una pila, pero nos preocuparemos menos haciéndolo así
-   std::list<std::unordered_set<std::string_view>>::iterator iter;
+   std::list<std::unordered_set<std::string_view>>::iterator iter;      // el ámbito más interno será el primero elemento de la lista; éste es el iterador al nuestro
    const decltype(program_resources::function_overloads)& function_overloads;
+
+   current_scope(std::list<std::unordered_set<std::string_view>>& li, const decltype(program_resources::function_overloads)& f, std::list<std::unordered_set<std::string_view>>::iterator it)
+   : list(li), function_overloads(f), iter(li.emplace(it)) {
+   }
 
 public:
    using scope_list = std::list<std::unordered_set<std::string_view>>;
 
-   current_scope(std::list<std::unordered_set<std::string_view>>& li, std::list<std::unordered_set<std::string_view>>::iterator it, const decltype(program_resources::function_overloads)& f)
-   : list(li), iter(li.emplace(it)), function_overloads(f) {
+   current_scope(std::list<std::unordered_set<std::string_view>>& li, const decltype(program_resources::function_overloads)& f)
+   : current_scope(li, f, li.end( )) {
    }
 
    ~current_scope( ) {
       list.erase(iter);
    }
 
-   auto emplace_succesor( ) {
-      return current_scope(list, std::next(iter), function_overloads);
+   auto emplace_next_scope( ) {
+      return current_scope(list, function_overloads, iter);
    }
 
    bool try_declare(std::string_view s) {
@@ -38,7 +42,7 @@ public:
       // 1) no existe el símbolo (regresamos nullptr)
       // 2) sí existe el símbolo y sí es variable
       // 3) sí existe el símbolo pero es una función
-      for (auto i = std::make_reverse_iterator(std::next(iter)); i != list.rend( ); ++i) {
+      for (auto i = iter; i != list.end( ); ++i) {
          // buscar en *i
       }
       // buscar en function_overloads;
@@ -46,7 +50,7 @@ public:
 
    // nulo si no la encontramos
    operator_declaration* find_function(std::string_view s, std::size_t arity) {
-      for (auto i = std::make_reverse_iterator(std::next(iter)); i != list.rend( ); ++i) {
+      for (auto i = iter; i != list.end( ); ++i) {
          // buscar que ningún identificador de *i la oculte
       }
       // buscar en function_overloads
@@ -100,7 +104,16 @@ void analyze_statement(const expression_statement& s, const program_resources& p
 }
 
 void analyze_statement(const if_statement& s, const program_resources& pr, current_scope& scope) {
+   // analizar la condición
+   parse_si: {
+      auto inner = scope.emplace_next_scope( );
+      // enviar inner a la recursión
+   }
 
+   parte_no: {
+      auto inner = scope.emplace_next_scope( );
+      // enviar inner a la recursión
+   }
 }
 
 void analyze_statement(const var_statement& s, const program_resources& pr, current_scope& scope) {
@@ -126,7 +139,7 @@ void analyze_function(const function_declaration& f, const program_resources& pr
 
 void analyze_program(const syntax_tree& tree, const program_resources& pr) {
    current_scope::scope_list list;
-   current_scope scope(list, list.end( ), pr.function_overloads);
+   current_scope scope(list, pr.function_overloads);
    for (const auto& f : tree.functions) {
       analyze_function(f, pr, scope);
    }
