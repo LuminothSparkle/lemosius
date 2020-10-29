@@ -9,17 +9,17 @@
 #include<unordered_set>
 #include<typeinfo>
 
-class current_scope {
-   current_scope* parent;
+class scope {
+   scope* parent;
    std::unordered_map<std::string_view, token*> variables;
    const std::unordered_map<std::string_view, std::map<std::size_t, program_resources::visible_function>>& function_overloads;
 
 public:
-   current_scope(const decltype(program_resources::function_overloads)& f)
+   scope(const decltype(program_resources::function_overloads)& f)
    : parent(nullptr), function_overloads(f) {
    }
 
-   current_scope(current_scope* p)     // no puede ser nulo (debería ser referencia, pero no quiero que haya ambigüedad con un constructor por copia)
+   scope(scope* p)     // no puede ser nulo (debería ser referencia, pero no quiero que haya ambigüedad con un constructor por copia)
    : parent(p), function_overloads(p->function_overloads) {
    }
 
@@ -45,90 +45,90 @@ public:
    }
 };
 
-void analyze_expression(const expression& e, const program_resources& pr, current_scope& scope);
+void analyze_expression(const expression& e, const program_resources& pr, scope& current);
 
-void analyze_expression(const terminal_expression& e, const program_resources& pr, current_scope& scope) {
-
-}
-
-void analyze_expression(const prefix_expression& e, const program_resources& pr, current_scope& scope) {
+void analyze_expression(const terminal_expression& e, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_expression(const suffix_expression& e, const program_resources& pr, current_scope& scope) {
+void analyze_expression(const prefix_expression& e, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_expression(const binary_expression& e, const program_resources& pr, current_scope& scope) {
+void analyze_expression(const suffix_expression& e, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_expression(const call_expression& e, const program_resources& pr, current_scope& scope) {
+void analyze_expression(const binary_expression& e, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_expression(const statement& e, const program_resources& pr, current_scope& scope) {         // sí, if else if !
+void analyze_expression(const call_expression& e, const program_resources& pr, scope& current) {
+
+}
+
+void analyze_expression(const statement& e, const program_resources& pr, scope& current) {         // sí, if else if !
    if (typeid(e) == typeid(terminal_expression)) {
-      return analyze_expression(dynamic_cast<const terminal_expression&>(e), pr, scope);
+      return analyze_expression(dynamic_cast<const terminal_expression&>(e), pr, current);
    } else if (typeid(e) == typeid(prefix_expression)) {
-      return analyze_expression(dynamic_cast<const prefix_expression&>(e), pr, scope);
+      return analyze_expression(dynamic_cast<const prefix_expression&>(e), pr, current);
    } else if (typeid(e) == typeid(suffix_expression)) {
-      return analyze_expression(dynamic_cast<const suffix_expression&>(e), pr, scope);
+      return analyze_expression(dynamic_cast<const suffix_expression&>(e), pr, current);
    } else if (typeid(e) == typeid(binary_expression)) {
-      return analyze_expression(dynamic_cast<const binary_expression&>(e), pr, scope);
+      return analyze_expression(dynamic_cast<const binary_expression&>(e), pr, current);
    } else if (typeid(e) == typeid(call_expression)) {
-      return analyze_expression(dynamic_cast<const call_expression&>(e), pr, scope);
+      return analyze_expression(dynamic_cast<const call_expression&>(e), pr, current);
    }
 }
 
-void analyze_statement(const statement& s, const program_resources& pr, current_scope& scope);
+void analyze_statement(const statement& s, const program_resources& pr, scope& current);
 
-void analyze_statement(const sequence_statement& s, const program_resources& pr, current_scope& scope) {
-
-}
-
-void analyze_statement(const expression_statement& s, const program_resources& pr, current_scope& scope) {
+void analyze_statement(const sequence_statement& s, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_statement(const if_statement& s, const program_resources& pr, current_scope& scope) {
+void analyze_statement(const expression_statement& s, const program_resources& pr, scope& current) {
+
+}
+
+void analyze_statement(const if_statement& s, const program_resources& pr, scope& current) {
    // analizar la condición
    parse_si: {
-      current_scope inner(&scope);
+      scope inner(&current);
       // enviar inner a la recursión
    }
 
    parte_no: {
-      current_scope inner(&scope);
+      scope inner(&current);
       // enviar inner a la recursión
    }
 }
 
-void analyze_statement(const var_statement& s, const program_resources& pr, current_scope& scope) {
+void analyze_statement(const var_statement& s, const program_resources& pr, scope& current) {
 
 }
 
-void analyze_statement(const statement& s, const program_resources& pr, current_scope& scope) {        // sí, if else if !
+void analyze_statement(const statement& s, const program_resources& pr, scope& current) {        // sí, if else if !
    if (typeid(s) == typeid(sequence_statement)) {
-      return analyze_statement(dynamic_cast<const sequence_statement&>(s), pr, scope);
+      return analyze_statement(dynamic_cast<const sequence_statement&>(s), pr, current);
    } else if (typeid(s) == typeid(expression_statement)) {
-      return analyze_statement(dynamic_cast<const expression_statement&>(s), pr, scope);
+      return analyze_statement(dynamic_cast<const expression_statement&>(s), pr, current);
    } else if (typeid(s) == typeid(if_statement)) {
-      return analyze_statement(dynamic_cast<const if_statement&>(s), pr, scope);
+      return analyze_statement(dynamic_cast<const if_statement&>(s), pr, current);
    } else if (typeid(s) == typeid(var_statement)) {
-      return analyze_statement(dynamic_cast<const var_statement&>(s), pr, scope);
+      return analyze_statement(dynamic_cast<const var_statement&>(s), pr, current);
    }
 }
 
-void analyze_function(const function_declaration& f, const program_resources& pr, current_scope& scope) {
+void analyze_function(const function_declaration& f, const program_resources& pr, scope& current) {
    //...
-   analyze_statement(*f.body, pr, scope);
+   analyze_statement(*f.body, pr, current);
 }
 
 void analyze_program(const syntax_tree& tree, const program_resources& pr) {
-   current_scope scope(pr.function_overloads);
+   scope current(pr.function_overloads);
    for (const auto& f : tree.functions) {
-      analyze_function(f, pr, scope);
+      analyze_function(f, pr, current);
    }
 }
 
