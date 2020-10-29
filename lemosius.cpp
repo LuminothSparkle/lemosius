@@ -1,11 +1,11 @@
 #include"lexer.h"
 #include"parser.h"
-#include"semantic.h"
+#include"semantic_global.h"
+#include"semantic_local.h"
 #include"inout.h"
 #include"debugging.h"
 
 #include<cstddef>
-
 #include<iostream>
 #include<map>
 #include<stack>
@@ -109,6 +109,7 @@ try {
         std::filesystem::current_path( old_dir );
         // Semantico 1
         pr.operator_overloads = generate_usables_operators(pr.inclusions, pr.tree.header.operators);
+        pr.function_overloads = generate_usables_functions(pr.inclusions, pr.tree.functions);
         // Lexico 2
         lex.overwrite_operators( std::move(get_operator_views(pr.operator_overloads)) );
         pr.program_tokens = lex.analisis( ini, END_OF_INPUT );

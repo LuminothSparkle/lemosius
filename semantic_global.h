@@ -1,5 +1,5 @@
-#ifndef SEMANTIC_H
-#define SEMANTIC_H
+#ifndef SEMANTIC_GLOBAL_H
+#define SEMANTIC_GLOBAL_H
 
 #include"lexer.h"
 #include"parser.h"
@@ -76,6 +76,13 @@ auto generate_usables_operators(const std::vector<program_resources::inclusion>&
     return overloads;
 }
 
+auto generate_usables_functions(const std::vector<program_resources::inclusion>& incs, const std::vector<function_declaration>& funcs) {
+   decltype(program_resources::function_overloads) overloads;
+   // prácticamente lo mismo que con los operadores: jalar las funciones de las inclusiones y también predeclarar las propias
+
+   return overloads;
+}
+
 auto get_operator_views(const decltype(program_resources::operator_overloads)& overloads) {
     std::vector<std::string_view> res;
     for(const auto& [str_view, overload] : overloads) {
@@ -93,7 +100,5 @@ auto get_operator_decls(const decltype(program_resources::operator_overloads)& o
     }
     return res;
 }
-
-
 
 #endif

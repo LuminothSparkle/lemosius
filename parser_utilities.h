@@ -55,7 +55,7 @@ token* match(token*& t, token_type type, const std::string& mes = "") {
 
 struct operator_map {
     std::unordered_set<std::string_view> suffix_operators, prefix_operators;
-    std::unordered_map<std::string_view,std::pair<std::int64_t,bool>> infix_operators;
+    std::unordered_map<std::string_view, std::pair<std::int64_t,bool>> infix_operators;
 
     template<typename InputContainer>
     explicit operator_map(const InputContainer& ops) {
