@@ -1,68 +1,17 @@
 #ifndef PARSER_STATEMENT_H
 #define PARSER_STATEMENT_H
 
-#include"lexer.h"
-#include"parser_expression.h"
-#include"parser_utilities.h"
+#include "lexer_types.h"
+#include "statement_types.h"
 
-#include<memory>
-#include<vector>
+#include "parser_utilities.h"
+#include "parser_expression.h"
 
-struct statement {
-   virtual std::string str() const = 0;
-};
+#include <memory>
 
-struct sequence_statement : statement {
-   std::vector<std::unique_ptr<statement>> body;
+std::unique_ptr<statement> parse_statement( const token*& t, const operator_map& opm );
 
-   std::string str() const {
-      return "{...}";
-   }
-};
-
-struct expression_statement : statement {
-   std::unique_ptr<expression> body;
-
-   std::string str() const {
-      return to_string( body, "" ) + ";";
-   }
-};
-
-struct if_statement : statement {
-   std::vector<std::unique_ptr<sequence_statement>>  bodys;
-   std::vector<std::unique_ptr<expression>>          conditions;
-   std::unique_ptr<sequence_statement>               else_body      = nullptr;
-
-   std::string str() const {
-      std::string res;
-      for( std::size_t idx = 0; idx < conditions.size(); ++idx ) {
-         res.append( ( idx > 0 ? "else " : "" ) + to_string( conditions[idx], "if(", ")" ) + to_string( bodys[idx], " ", "\n" ) );
-      }
-      res.append( to_string( else_body, "else ", "\n" ) );
-      return res;
-   }
-};
-
-struct var_statement : statement {
-   token                       name;
-   std::unique_ptr<expression> value = nullptr;
-
-   std::string str() const {
-      return to_string( name, "var " ) + to_string( value, " := " ) + ";";
-   }
-};
-
-struct return_statement : statement {
-   std::unique_ptr<expression> return_value = nullptr;
-
-   std::string str() const {
-      return "return" + to_string( return_value, " " ) + ";";
-   }
-};
-
-std::unique_ptr<statement> parse_statement( token*& t, const operator_map& opm );
-
-auto parse_sequence_statement( token*& t, const operator_map& opm ) {
+auto parse_sequence_statement( const token*& t, const operator_map& opm ) {
    auto seq_stmt = std::make_unique<sequence_statement>();
 
    match( t, LBRACE_P, "Expecting {" );
@@ -73,7 +22,7 @@ auto parse_sequence_statement( token*& t, const operator_map& opm ) {
    return seq_stmt;
 }
 
-auto parse_if_statement( token*& t, const operator_map& opm ) {
+auto parse_if_statement( const token*& t, const operator_map& opm ) {
    auto if_stmt = std::make_unique<if_statement>();
 
    match( t, IF_K, "Expecting if" );
@@ -96,11 +45,11 @@ auto parse_if_statement( token*& t, const operator_map& opm ) {
    return if_stmt;
 }
 
-auto parse_var_statement( token*& t, const operator_map& opm ) {
+auto parse_var_statement( const token*& t, const operator_map& opm ) {
    auto var_decl = std::make_unique<var_statement>();
 
    match( t, VAR_K, "Expecting var" );
-   var_decl->name = *match( t, IDENTIFIER_L, "Expecting an identifier" );
+   var_decl->name = match( t, IDENTIFIER_L, "Expecting an identifier" );
    if( optional_match( t, ASSIGNMENT_O ) != nullptr ) {
       var_decl->value = parse_expression( t, opm );
    }
@@ -109,7 +58,7 @@ auto parse_var_statement( token*& t, const operator_map& opm ) {
    return var_decl;
 }
 
-auto parse_return_statement( token*& t, const operator_map& opm ) {
+auto parse_return_statement( const token*& t, const operator_map& opm ) {
    auto ret_stmt = std::make_unique<return_statement>();
 
    match( t, RETURN_K, "Expecting return" );
@@ -119,7 +68,7 @@ auto parse_return_statement( token*& t, const operator_map& opm ) {
    return ret_stmt;
 }
 
-auto parse_expression_statement( token*& t, const operator_map& opm ) {
+auto parse_expression_statement( const token*& t, const operator_map& opm ) {
    auto exp_stmt = std::make_unique<expression_statement>();
 
    if( *t != SEMICOLON_P ) {
@@ -130,7 +79,7 @@ auto parse_expression_statement( token*& t, const operator_map& opm ) {
    return exp_stmt;
 }
 
-std::unique_ptr<statement> parse_statement( token*& t, const operator_map& opm ) {
+std::unique_ptr<statement> parse_statement( const token*& t, const operator_map& opm ) {
    switch( *t ) {
    case LBRACE_P:
       return parse_sequence_statement( t, opm );

@@ -1,126 +1,14 @@
 #ifndef SEMANTIC_UTILITIES_H
 #define SEMANTIC_UTILITIES_H
 
-#include"lexer.h"
+#include "lexer_types.h"
 
-#include<string>
-#include<string_view>
-#include<utility>
-#include<charconv>
-#include<cstdlib>
+#include <cstdlib>
 
-
-#include<filesystem>
-#include<unordered_map>
-#include<set>
-#include<map>
-#include<list>
-#include<any>
-
-struct program_resources {
-   struct inclusion;
-   struct visible_operator;
-   struct visible_function;
-
-   std::filesystem::path source_path;
-   std::vector<char>     source_file;
-   std::vector<token>    header_tokens;
-   std::vector<token>    program_tokens;
-   syntax_tree           tree;
-
-   std::vector<inclusion> inclusions;
-   std::unordered_map<std::string_view, std::map<token_type,  visible_operator>> operator_overloads;
-   std::unordered_map<std::string_view, std::map<std::size_t, visible_function>> function_overloads;
-};
-
-struct program_resources::inclusion {
-   bool              access;
-   program_resources resources;
-};
-
-struct program_resources::visible_operator {
-   bool                        access;
-   const operator_declaration* declaration;
-};
-
-struct program_resources::visible_function {
-   bool                        access;
-   const function_declaration* declaration;
-};
-
-class scope {
-   static std::list<scope*> scope_list;                                   //Nadie toca la lista externamente
-   const program_resources& resources;
-   std::list<scope*>::iterator parent;                                    //Tal vez me estoy complicando mucho la vida pero supuse el caso en el que me muero yo y mis hijos aun viven
-   std::list<scope*>::iterator iter;                                      //Entonces debo hacer que mis hijos ya no apunten a mi cuando muera y que ademas no vayamos a ciegas en la lista
-   std::set<scope*> childs;                       //Destruyendo nodos que no sabemos si son hijos solo porque se insertaron despues
-   //Si ese fuera un problema en realidad creo que esta dificil no hacer alguna operación a ciegas
-   std::unordered_map<std::string_view, token> variables;                 //Tabla de variables
-
-   scope( const program_resources& pr, std::list<scope*>::iterator parent ) //Esta interfaz no se muestra al publico
-      : resources( pr ), parent( parent ), iter( scope_list.emplace( parent, this ) ) {
-      if( parent != scope_list.end() ) {
-         childs.insert( this );
-      }
-   }
-
- public:
-   enum return_type {                              //Es posible que no se tengan que usar debido al std::any pero no me quiero arriesgar demasiado aun
-      NO_DECLARED = -1,
-      FUNCTION_MAP,
-      VARIABLE
-   };
-
-   scope() = delete;                               //Evitar scopes sin program_resources
-   scope& operator =( const scope& ) = delete;     //Evitar copias de un mismo scope
-   scope( const scope& ) = delete;                 //Evitar copias de un mismo scope
-
-   explicit scope( const program_resources& pr )   //Si no tiene padre se genera asi y para evitar castings raros que sea explicit
-      : scope( pr, scope_list.end() ) {
-   }
-
-   auto emplace_succesor() {                       //Genera un scope de uno existente asi
-      return scope( resources, iter );
-   }
-
-   ~scope( ) {                                      //Si me muero yo que mis hijos apunten a mi padre y mi padre apunte a mis hijos y finalmente me borro
-      if( parent != scope_list.end() ) {
-         ( *parent )->childs.erase( this );
-         for( auto child : childs ) {
-            ( *parent )->childs.insert( child );
-         }
-      }
-      for( auto child : childs ) {
-         child->parent = parent;
-      }
-      scope_list.erase( iter );
-   }
-
-   bool try_declare( const token& t ) {
-      return variables.emplace( t.source, t ).second;
-   }
-
-   std::pair<std::any, return_type> find_symbol( const token& t ) const {     //Devuelve un tipo diferente segun sea el caso
-      // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
-      // 1) no existe el símbolo (regresamos nullptr)
-      // 2) sí existe el símbolo y sí es variable
-      // 3) sí existe el símbolo pero es una función
-      for( auto it = iter; it != scope_list.end(); it = ( *it )->parent ) {
-         if( auto v_it = ( *it )->variables.find( t.source ); v_it != ( *it )->variables.end() ) {
-            return { v_it->second, VARIABLE };
-         }
-      }
-      try {
-         auto& func_map = resources.function_overloads.at( t.source );
-         return { func_map, FUNCTION_MAP };
-      } catch( const std::out_of_range& e ) {
-         return { {}, NO_DECLARED };
-      }
-   }
-
-};
-
-std::list<scope*> scope::scope_list = std::list<scope*>();
+#include <string>
+#include <string_view>
+#include <utility>
+#include <charconv>
 
 template<typename T>
 bool is_public( const T& t ) {

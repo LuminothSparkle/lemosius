@@ -1,12 +1,13 @@
 #ifndef DEBUGGING_H
 #define DEBUGGING_H
 
-#include"lexer.h"
-#include"parser.h"
+#include "lexer_types.h"
+#include "parser_types.h"
+#include "semantic_types.h"
 
-#include<string>
-#include<ostream>
-#include<iterator>
+#include <string>
+#include <ostream>
+#include <iterator>
 
 namespace debugging {
 
@@ -148,7 +149,7 @@ std::ostream& operator <<( std::ostream& os, const syntax_tree& st ) {
 std::ostream& operator <<( std::ostream& os, const program_resources::visible_operator& vo ) {
    os << "visible_operator:\n";
    os << "public: " << ( vo.access ? "public" : "private" ) << "\n";
-   os << "declaration:" << vo.declaration.str() << "\n";
+   os << "declaration:" << vo.declaration->str() << "\n";
    return os << "ends visible_operator\n";
 }
 
@@ -160,6 +161,27 @@ std::ostream& operator <<( std::ostream& os, const decltype( program_resources::
       for( const auto& [position, vis_op] : overloads ) {
          os << "position:" << debugging::token_str.at( position ) << "\n"
             << vis_op << "\n";
+      }
+   }
+   return os << "ends overloads\n";
+}
+
+std::ostream& operator <<( std::ostream& os, const program_resources::visible_function& vf ) {
+   os << "visible_operator:\n";
+   os << "public: " << ( vf.access ? "public" : "private" ) << "\n";
+   os << "declaration:" << vf.declaration->str() << "\n";
+   return os << "ends visible_operator\n";
+}
+
+
+std::ostream& operator <<( std::ostream& os, const decltype( program_resources::function_overloads )& fo ) {
+   os << "function_overloads:\n";
+   for( const auto& [name, overloads] : fo ) {
+      os << "name:" << name << "\n";
+      os << "overloads:\n";
+      for( const auto& [arguments, vis_func] : overloads ) {
+         os << "arguments:" << arguments << "\n"
+            << vis_func << "\n";
       }
    }
    return os << "ends overloads\n";
@@ -179,7 +201,7 @@ std::ostream& operator <<( std::ostream& os, const program_resources& pr ) {
           << pr.tree                << "\n"
           << "ends tree\n"
           << "operator_overloads: " << pr.operator_overloads << "\n"
-          //<< "function_overloads: " << pr.function_overloads << "\n";
+          << "function_overloads: " << pr.function_overloads << "\n"
           << "ends program_resources\n";
 }
 
