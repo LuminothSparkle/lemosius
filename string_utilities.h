@@ -1,8 +1,8 @@
 #ifndef STRING_UTILITIES_H
 #define STRING_UTILITIES_H
 
-#include<string>
-#include<memory>
+#include <string>
+#include <memory>
 
 template<typename InputIterator, typename Transform>
 std::string transform_join( InputIterator first, InputIterator last, const Transform& T, const char* sep = "", const char* prefix = "", const char* suffix = "" ) {

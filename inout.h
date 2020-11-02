@@ -1,10 +1,10 @@
 #ifndef INOUT_H
 #define INOUT_H
 
-#include<filesystem>
-#include<fstream>
-#include<vector>
-#include<iostream>
+#include <filesystem>
+#include <fstream>
+#include <vector>
+#include <iostream>
 
 std::vector<char> read_file( const std::filesystem::path& path ) {
    std::ifstream input;
