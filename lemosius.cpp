@@ -1,20 +1,21 @@
-#include"lexer.h"
-#include"parser.h"
-#include"semantic.h"
-#include"inout.h"
-#include"debugging.h"
+#include "lexer_types.h"
 
-#include<cstddef>
+#include "parser.h"
+#include "semantic_global.h"
+#include "inout.h"
+#include "debugging.h"
 
-#include<iostream>
-#include<map>
-#include<stack>
-#include<fstream>
-#include<filesystem>
-#include<utility>
-#include<array>
-#include<algorithm>
-#include<span>
+#include <cstddef>
+
+#include <iostream>
+#include <map>
+#include <stack>
+#include <fstream>
+#include <filesystem>
+#include <utility>
+#include <array>
+#include <algorithm>
+#include <span>
 
 using map_path_source = std::map<std::filesystem::path, std::span<char>>;
 
@@ -89,19 +90,19 @@ try {
       const char* ini  = pr.source_file.data( );
       pr.header_tokens = lex.analisis( ini, PROC_K );
       // Sintactico 1
-      token* tok_p   = pr.header_tokens.data( );
+      const token* tok_p   = pr.header_tokens.data( );
       pr.tree.header = parse_header( tok_p );
       // Compilacion recursiva
       auto old_dir = std::filesystem::current_path( );
       std::filesystem::current_path( path.parent_path( ) );
       for( const auto& inc : pr.tree.header.includes ) {
          try {
-            auto res = compile( unquoted_str( inc.file_name ), compiled );
+            auto res = compile( unquoted_str( *inc.file_name ), compiled );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
          } catch( std::stack<compiler_error>& s ) {
-            s.push( compiler_error( compiled, std::make_pair( inc.file_name, "In file included" ) ) );
+            s.push( compiler_error( compiled, std::make_pair( *inc.file_name, "In file included" ) ) );
             throw;
          }
       }
@@ -114,7 +115,8 @@ try {
       // Sintactico 2
       tok_p             = pr.program_tokens.data( );
       pr.tree.functions = parse_program( tok_p, get_operator_decls( pr.operator_overloads ) );
-
+      pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
+      analyze_program( pr );
       return pr;
    } catch( const std::vector<std::pair<token, std::string>>& e ) {
       throw std::stack<compiler_error>( { compiler_error( compiled, e ) } );
