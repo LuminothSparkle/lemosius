@@ -71,6 +71,15 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
    std::string what;
 };
 
+template<typename P>
+void backtrack_tokens(std::vector<token>& tokens, const char*& ini, P pred) {
+   do {     // al menos el END_OF_INPUT
+      ini = tokens.back( ).begin( );
+      tokens.pop_back( );
+   } while (!tokens.empty( ) && pred(tokens.back( )));
+   tokens.push_back({ END_OF_INPUT, {ini, 0} });         // veo que en el lexer viene un len calculado; no creo que valga la pena (basta 0)
+}
+
 std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled )
 try {
    path = std::filesystem::absolute( path );
@@ -89,6 +98,7 @@ try {
       lexer lex;
       const char* ini  = pr.source_file.data( );
       pr.header_tokens = lex.analisis( ini, PROC_K );
+      backtrack_tokens(pr.header_tokens, ini, is_access);
       // Sintactico 1
       const token* tok_p   = pr.header_tokens.data( );
       pr.tree.header = parse_header( tok_p );
