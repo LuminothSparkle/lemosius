@@ -1,8 +1,6 @@
 #ifndef SEMANTIC_GLOBAL_H
 #define SEMANTIC_GLOBAL_H
 
-#include "lexer_types.h"
-#include "parser_types.h"
 #include "semantic_types.h"
 
 #include "semantic_utilities.h"
@@ -14,22 +12,14 @@
 #include <vector>
 #include <string>
 
-void analyze_program( const program_resources& pr ) {
-   scope global = scope::get_global_scope( pr );
-   for( const auto& f : pr.tree.functions ) {
-      analyze_function( f, global );
-   }
-}
-
 auto generate_usables_operators( const std::vector<program_resources::inclusion>& incs, const std::vector<operator_declaration>& ops ) {
    decltype( program_resources::operator_overloads ) overloads;
    auto create_overload = [&overloads]( bool access, const operator_declaration & op ) {
       const auto& [it, is_inserted] = overloads[op.symbol->source].emplace( op.position->type, program_resources::visible_operator{access, &op} );
       if( !is_inserted ) {
-         using namespace std::string_literals;
          throw std::vector<std::pair<token, std::string>>( {
-            std::make_pair( *op.symbol,                     "Operator overload already defined"s ),
-            std::make_pair( *it->second.declaration->symbol, "Previously defined"s )
+            { *op.symbol,                      "Operator overload already defined" },
+            { *it->second.declaration->symbol, "Previously defined"                }
          } );
       }
    };
@@ -57,10 +47,9 @@ auto generate_usables_functions( const std::vector<program_resources::inclusion>
    auto create_overload = [&overloads]( bool access, const function_declaration & func ) {
       const auto& [it, is_inserted] = overloads[func.name->source].emplace( func.parameters.size(), program_resources::visible_function{access, &func} );
       if( !is_inserted ) {
-         using namespace std::string_literals;
          throw std::vector<std::pair<token, std::string>>( {
-            std::make_pair( *func.name,                    "Function overload already defined"s ),
-            std::make_pair( *it->second.declaration->name, "Previously defined"s )
+            { *func.name,                    "Function overload already defined" },
+            { *it->second.declaration->name, "Previously defined"                }
          } );
       }
    };
@@ -95,6 +84,22 @@ auto get_operator_decls( const decltype( program_resources::operator_overloads )
       }
    }
    return res;
+}
+
+void analyze_program( const program_resources& pr ) {
+   for( const auto& [sv, overload] : pr.operator_overloads ) {
+      for( const auto& [type, vop] : overload ) {
+         const auto& [access, decl] = vop;
+         auto it = pr.function_overloads.find( decl->function->source );
+         if( it == pr.function_overloads.end() || ( type == INFIX_K && !it->second.contains( 2 ) ) || ( type != INFIX_K && !it->second.contains( 1 ) ) ) {
+            throw std::pair<token, std::string>( *decl->function, "Operator handler function doesn't exist." );
+         }
+      }
+   }
+   scope_stack global( pr );
+   for( const auto& f : pr.tree.functions ) {
+      analyze_function( f, global );
+   }
 }
 
 
