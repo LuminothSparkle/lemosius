@@ -1,7 +1,6 @@
 #ifndef PARSER_H
 #define PARSER_H
 
-#include "lexer_types.h"
 #include "parser_types.h"
 
 #include "parser_utilities.h"
@@ -18,7 +17,7 @@ auto parse_header( const token*& t ) {
       include_declaration inc_decl;
       // Parsea la declaracion de include
       inc_decl.access = optional_match( t, is_access );
-      match( t, INCLUDE_K );
+      match( t, INCLUDE_K, "Expecting include" );
       inc_decl.file_name = match( t, STRING_L, "Expecting a string literal" );
       match( t, SEMICOLON_P, "Expecting ;" );
       // Inserta la declaracion de include
@@ -28,7 +27,7 @@ auto parse_header( const token*& t ) {
       operator_declaration op;
       // Parsea la declaracion de operador
       op.access = optional_match( t, is_access );
-      match( t, OPERATOR_K );
+      match( t, OPERATOR_K, "Expecting operator" );
       op.symbol   = match( t, OPERATOR_L, "Expecting an operator" );
       op.position = match( t, is_position, "Expecting infix, prefix or suffix" );
       if( *op.position == INFIX_K ) {
@@ -43,7 +42,7 @@ auto parse_header( const token*& t ) {
       // Inserta la declaracion de operador
       ops.push_back( std::move( op ) );
    }
-   match( t, END_OF_INPUT, "Expecting a function declaration" );
+   match( t, END_OF_INPUT, "Expecting a header or operator declaration" );
 
    return hd;
 }
@@ -56,22 +55,22 @@ auto parse_program( const token*& t, const std::vector<operator_declaration>& op
       function_declaration func_def;
       // Parsea la definicion de la funcion
       func_def.access = optional_match( t, is_access );
-      match( t, PROC_K );
-      func_def.name = match( t, IDENTIFIER_L );
-      match( t, LPARENTHESIS_P );
+      match( t, PROC_K, "Expecting proc" );
+      func_def.name = match( t, IDENTIFIER_L, "Expecting an identifier" );
+      match( t, LPARENTHESIS_P, "Expecting (" );
       while( *t == IDENTIFIER_L ) {
-         func_def.parameters.push_back( match( t, IDENTIFIER_L ) );
+         func_def.parameters.push_back( match( t, IDENTIFIER_L, "Expecting an identifier" ) );
          if( *t != RPARENTHESIS_P ) {
-            match( t, COMMA_P );
+            match( t, COMMA_P, "Expecting ," );
          }
       }
-      match( t, RPARENTHESIS_P );
+      match( t, RPARENTHESIS_P, "Expecting )" );
       // Parsea las demas sentencias de la funcion
       func_def.body = parse_sequence_statement( t, opm );
       // Inserta la funcion al arbol.
       funcs.push_back( std::move( func_def ) );
    }
-   match( t, END_OF_INPUT );
+   match( t, END_OF_INPUT, "Expecting a function declaration" );
 
    return funcs;
 }

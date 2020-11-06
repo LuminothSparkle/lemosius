@@ -1,8 +1,7 @@
 #ifndef PARSER_STATEMENT_H
 #define PARSER_STATEMENT_H
 
-#include "lexer_types.h"
-#include "statement_types.h"
+#include "parser_types.h"
 
 #include "parser_utilities.h"
 #include "parser_expression.h"

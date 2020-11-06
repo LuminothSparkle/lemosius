@@ -1,8 +1,7 @@
 #ifndef PARSER_EXPRESSION_H
 #define PARSER_EXPRESSION_H
 
-#include "lexer_types.h"
-#include "expression_types.h"
+#include "parser_types.h"
 
 #include "parser_utilities.h"
 
@@ -12,25 +11,25 @@ std::unique_ptr<expression> parse_expression( const token*& t, const operator_ma
 
 std::unique_ptr<expression> parse_primary_expression( const token*& t, const operator_map& opm ) {    // un terminal_expression, una expresión envuelta en ( ) o una llamada a función
    if( *t == LPARENTHESIS_P ) {
-      match( t, LPARENTHESIS_P );
+      match( t, LPARENTHESIS_P, "Expecting (" );
       auto res = parse_expression( t, opm );
-      match( t, RPARENTHESIS_P );
+      match( t, RPARENTHESIS_P, "Expecting )" );
       return res;
    } else if( *t == IDENTIFIER_L && *( t + 1 ) == LPARENTHESIS_P ) {
       auto res = std::make_unique<call_expression>( );
-      res->function_name = match( t, IDENTIFIER_L );
-      match( t, LPARENTHESIS_P );
+      res->function_name = match( t, IDENTIFIER_L, "Expecting an function identifier" );
+      match( t, LPARENTHESIS_P, "Expecting (" );
       while( *t != RPARENTHESIS_P ) {
          res->params.push_back( parse_expression( t, opm ) );
          if( *t != RPARENTHESIS_P ) {
-            match( t, COMMA_P );
+            match( t, COMMA_P, "Expecting ," );
          }
       }
-      match( t, RPARENTHESIS_P );
+      match( t, RPARENTHESIS_P, "Expecting )" );
       return res;
    } else {
       auto res = std::make_unique<terminal_expression>( );
-      res->t = match( t, match_any( { NUMBER_L, IDENTIFIER_L } ) );
+      res->t = match( t, match_any( { NUMBER_L, IDENTIFIER_L } ), "Expecting an identifier or number literal" );
       return res;
    }
 }
@@ -38,7 +37,7 @@ std::unique_ptr<expression> parse_primary_expression( const token*& t, const ope
 std::unique_ptr<expression> parse_unary_expression( const token*& t, const operator_map& opm ) {
    if( is_prefix_operator( opm, *t ) ) {     // ¿cómo?
       auto res = std::make_unique<prefix_expression>( );
-      res->op = match( t, std::bind_front( is_prefix_operator, opm ) );
+      res->op = match( t, std::bind_front( is_prefix_operator, opm ), "Expecting an prefix operator" );
       res->ex = parse_unary_expression( t, opm );
       return res;
    }
@@ -46,7 +45,7 @@ std::unique_ptr<expression> parse_unary_expression( const token*& t, const opera
    while( is_suffix_operator( opm, *t ) ) {  // ¿cómo?
       auto temp = std::make_unique<suffix_expression>( );
       temp->ex = std::move( res );
-      temp->op = match( t, std::bind_front( is_suffix_operator, opm ) );
+      temp->op = match( t, std::bind_front( is_suffix_operator, opm ), "Expecting an suffix operator" );
       res = std::move( temp );
    }
    return res;
@@ -58,7 +57,7 @@ std::unique_ptr<expression> parse_binary_expression( const token*& t, std::int64
       auto next_prec = precedence( opm, *t ) + is_left_assoc( opm, *t );
       auto temp = std::make_unique<binary_expression>( );
       temp->ex1 = std::move( res );
-      temp->op =  match( t, std::bind_front( is_binary_operator, opm ) );
+      temp->op =  match( t, std::bind_front( is_binary_operator, opm ), "Expecting an infix operator" );
       temp->ex2 = parse_binary_expression( t, next_prec, opm );
       res = std::move( temp );
    }

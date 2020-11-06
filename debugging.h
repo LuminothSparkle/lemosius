@@ -1,9 +1,9 @@
 #ifndef DEBUGGING_H
 #define DEBUGGING_H
 
-#include "lexer_types.h"
-#include "parser_types.h"
-#include "semantic_types.h"
+#include "lexer.h"
+#include "parser.h"
+#include "semantic_global.h"
 
 #include <string>
 #include <ostream>
