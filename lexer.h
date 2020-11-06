@@ -1,5 +1,5 @@
-#ifndef LEXER_TYPES_H
-#define LEXER_TYPES_H
+#ifndef LEXER_H
+#define LEXER_H
 
 #include "string_utilities.h"
 
@@ -88,14 +88,15 @@ struct token {
 
 };
 
-struct lexer {
+class lexer {
    std::array<std::vector<std::string>, END_OF_INPUT> token_forms; // Formas que pueden tomar los tokens reconocidos por el lexer
 
    RE2 generate_expresion( ) const {
-      std::vector<std::string> other_tokens = {          // Tokens reconocidos como validos pero que no generan token para el parser
+      std::vector<std::string> other_tokens = {         // Tokens reconocidos como validos pero que no generan token para el parser
          R"(\s+)",                                      // Espacios y saltos de linea
-         R"(\#\#\#(?:[^\#](?s:.*)[^\#]|[^\#]?)\#\#\#)", // Comentarios multilinea
-         R"(\#\#(?:[^\#\n][^\n]*)?(?:\n|$))",             // Comentarios de una linea
+                                                         // R"((?:[^\#](?s:.*)[^\#]|[^\#]?))"
+         RE2::QuoteMeta( R"(###<)" ) + R"((?s:|.+))" + RE2::QuoteMeta( R"(>###)" ), // Comentarios multilinea
+         RE2::QuoteMeta( R"(##<)" ) + R"([^\n]*(?:\n|$))",           // Comentarios de una linea
       };
       std::vector<std::string> parts( token_forms.size( ) + 1 );
       parts[0] = join( other_tokens, "|" );
@@ -106,7 +107,8 @@ struct lexer {
       return RE2( join( parts, "|" ) );
    }
 
-   std::vector<token> analisis( const char*& ini, token_type stop, std::string error_mes = "" ) const  {
+ public:
+   std::vector<token> tokenization( const char*& ini, token_type stop, std::string error_mes = "" ) const  {
       // Genera expresion e inicializa la entrada del mismo
       RE2 e = generate_expresion( );
       re2::StringPiece input( ini );
@@ -126,7 +128,7 @@ struct lexer {
       while( !input.empty( ) && ( stop == END_OF_INPUT || mt[stop].empty( ) ) ) {
          // Reconoce la cadena y si falla manda un error de compilador
          if( !RE2::ConsumeN( &input, e, m.begin( ), m.size( ) ) ) {
-            throw std::make_pair( token{UNKNOWN, {input.data( ), 10}}, "Lexic Error:" + error_mes );
+            throw std::pair<token, std::string>( {UNKNOWN, {input.data( ), 10}}, error_mes );
          }
          // Determina el tipo de token
          token_type type = token_type(
@@ -135,26 +137,27 @@ struct lexer {
          } ) - mt.begin( )
                            );
          // Insertalo al vector de tokens si no es un token de comentario o espacio o es el token de parada
-         if( type < END_OF_INPUT && type != stop ) {
+         if( type != END_OF_INPUT && type != stop ) {
             tokens.push_back( { type, { mt[type].data( ), mt[type].length( ) } } );
          }
       }
       // Mueve la entrada hasta donde reconociste
-      auto len = ( stop != END_OF_INPUT ? mt[stop].length( ) : 0 );
-      ini = input.data( ) - len;
+      if( stop != END_OF_INPUT ) {
+         ini = input.data( ) - mt[stop].size( );
+      }
       // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada
-      tokens.push_back( { END_OF_INPUT, {ini, len} } );
+      tokens.push_back( { END_OF_INPUT, {ini, 0} } );
       return tokens;
    }
 
-   void overwrite_operators( std::vector<std::string_view>&& ops ) {
-      std::sort( ops.begin( ), ops.end( ), []( const auto & s1, const auto & s2 ) {
-         return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch
-      } );
+   void overwrite_operators( const std::vector<std::string_view>& ops ) {
       token_forms[OPERATOR_L].clear( );
       for( const auto& op : ops ) {
          token_forms[OPERATOR_L].push_back( RE2::QuoteMeta( op ) );
       }
+      std::sort( token_forms[OPERATOR_L].begin(), token_forms[OPERATOR_L].end(), []( const auto & s1, const auto & s2 ) {
+         return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch
+      } );
    }
 
    lexer( ) {
@@ -187,4 +190,14 @@ struct lexer {
    }
 };
 
-#endif //LEXER_TYPES_H
+const char* popback_tokens( std::vector<token>& tokens, token_type type ) {
+   const char* last;
+   while( tokens.back() != type ) {
+      last = tokens.back().source.data();
+      tokens.pop_back();
+   }
+   tokens.push_back( { END_OF_INPUT, { last, 0 } } );
+   return last;
+}
+
+#endif //LEXER_H
