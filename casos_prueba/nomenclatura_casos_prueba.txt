@@ -1,7 +1,0 @@
-Nomenclatura para casos de prueba:
-#INC = Numero de inclusiones
-#REC = Maximo numero de inclusiones recursivas
-ELEX = Errores lexicos
-ESYN = Errores sintacticos
-ESEM = Errores sematicos
-EOPR = Operadores Redefinidos

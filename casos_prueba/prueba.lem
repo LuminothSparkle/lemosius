@@ -1,0 +1,44 @@
+include "prueba2.lem";
+##<include "prueba.lem";                              ##<Inclusión recursiva
+##<include "prueba_no_existe.lem";                    ##<No existe archivo
+
+##<include "hola.txt                                  ##<Error lexico, string no reconocida
+##<dasdasd                                            ##<Error lexico, identificador en un mal lugar
+##<include                                            ##<Error sintactico
+##<include infix                                      ##<Error sintactico
+
+##<operator * infix (left 9) as pub2_mult;            ##Redeclaración de *
+##<operator // infix (left 9) as priv2_div;           ##<Utilización de priv2_div que es privada
+##<operator ++ infix (left 9) as pub2_hashtag;        ##<Sobrecarga no valida, no existe pub2_hashtag con dos argumentos
+##<operator -- infix (left 9) as no_existe;           ##<Sobrecarga no valida, no existe ninguna funcion no_existe
+##<operator -- infix (left 4294967296) as pub2_minus; ##<Sobrecarga no valida, no admite valores superiores a 4294967295
+##<operator -- infix (left -1) as pub2_minus;         ##<Sobrecarga no valida, no admite valores inferiores a 0
+##<operator                                           ##<Error sintactico
+##<operator --                                        ##<Error sintactico
+##<operator infix (left -1) as;                       ##<Error sintactico
+
+###<No puede sobrecargarse de nuevo>### 
+private proc pub2_mult(a,b) {
+    return a * b;
+}
+###<>###
+
+proc main() {
+    var a := 0;
+    var b := 0;
+    ##<c;               ##<Utilización variable que no existe
+    ##<var b;           ##<Redeclaración de variable
+    pub2_plus(a,b);     ##<Utilización funcion publica de prueba2.txt
+    ##<pub2_plus(a);    ##<Utilización una sobrecarga que no existe
+    ##<priv2_plus(a,b); ##<Utilización funcion privada de prueba2.txt
+    ##<pub3_plus(a,b);  ##<Utilización inclusion privada, funcion privada de prueba3.txt en prueba2.txt
+    ##<pub3_plus(a,b);  ##<Utilización inclusion privada, funcion publica de prueba3.txt en prueba2.txt
+    pub4_plus(a,b);     ##<Utilización inclusion publica, funcion publica de prueba4.txt en prueba2.txt
+    ##<priv4_plus(a,b); ##<Utilización inclusion publica, funcion privada de prueba4.txt en prueba2.txt
+    a == b;             ##<Utilización operador publico de prueba2.txt
+    ##<a ** b;          ##<Utilización operador privado de prueba2.txt, pero gana error sintactico porque observa dos operadores *
+    ##<a::;             ##<Utilización inclusión privada, operador privado de prueba3.txt en prueba2.txt
+    ##<a\\;             ##<Utilización inclusión privada, operador publico de prueba3.txt en prueba2.txt
+    a&&;                ##<Utilización inclusion publica, operador publico de prueba4.txt en prueba2.txt
+    ##<a||;             ##<Utilización inclusion publica, operador privado de prueba4.txt en prueba2.txt
+}

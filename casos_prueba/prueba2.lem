@@ -1,0 +1,59 @@
+private include "prueba3.lem";
+public  include "prueba4.lem";
+
+public  operator *  infix (left 9) as pub2_mult;
+public  operator /  infix (left 9) as pub2_div;
+public  operator +  infix (left 9) as pub2_plus;
+public  operator -  infix (left 9) as pub2_minus;
+public  operator -  prefix         as pub2_minus;
+public  operator #  suffix         as pub2_hashtag;
+private operator ** infix (left 9) as pub2_plus;
+public  operator == infix (left 9) as pub2_plus;
+
+public proc pub2_mult(a,b) {
+    return a * b;
+}
+
+public proc pub2_div(a,b) {
+    return a / b;
+}
+
+public proc pub2_plus(a,b) {
+    return a + b;
+}
+
+public proc pub2_minus(a,b) {
+    return a - b;
+}
+
+public proc pub2_minus(a) {
+    return -a;
+}
+
+public proc pub2_hashtag(a) {
+    return a#;
+}
+
+private proc priv2_mult(a,b) {
+    return pub3_mult(a,b);
+}
+
+private proc priv2_div(a,b) {
+    return pub3_div(a,b);
+}
+
+private proc priv2_plus(a,b) {
+    return pub3_plus(a,b);
+}
+
+private proc priv2_minus(a,b) {
+    return pub3_minus(a,b);
+}
+
+private proc priv2_minus(a) {
+    return pub3_minus(a);
+}
+
+private proc priv2_hashtag(a) {
+    return pub3_hashtag(a);
+}
