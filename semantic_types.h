@@ -1,8 +1,8 @@
 #ifndef SEMANTIC_TYPES_H
 #define SEMANTIC_TYPES_H
 
-#include "lexer_types.h"
-#include "parser_types.h"
+#include "lexer.h"
+#include "parser.h"
 
 #include <filesystem>
 #include <vector>
@@ -10,12 +10,14 @@
 #include <map>
 #include <list>
 #include <set>
-#include <any>
+#include <variant>
 
 struct program_resources {
    struct inclusion;
    struct visible_operator;
    struct visible_function;
+   using function_overload_set = std::map<std::size_t, visible_function>;
+   using operator_overload_set = std::map<token_type, visible_operator>;
 
    std::filesystem::path source_path;
    std::vector<char>     source_file;
@@ -24,8 +26,8 @@ struct program_resources {
    syntax_tree           tree;
 
    std::vector<inclusion> inclusions;
-   std::unordered_map<std::string_view, std::map<token_type,  visible_operator>> operator_overloads;
-   std::unordered_map<std::string_view, std::map<std::size_t, visible_function>> function_overloads;
+   std::unordered_map<std::string_view, operator_overload_set> operator_overloads;
+   std::unordered_map<std::string_view, function_overload_set> function_overloads;
 };
 
 struct program_resources::inclusion {
@@ -43,71 +45,73 @@ struct program_resources::visible_function {
    const function_declaration* declaration;
 };
 
-class scope {
-   static std::list<scope*> scope_stack;                                   //Nadie toca la lista externamente
-   static const program_resources* resources;
-   const std::list<scope*>::iterator iter;
-   std::unordered_map<std::string_view, token> variables;                 //Tabla de variables
-
-   scope() //Esta interfaz no se muestra al publico
-   : iter( scope_stack.emplace( scope_stack.end(), this ) ) {
-   }
-
+class symbol {
+   std::variant<const token*, const program_resources::function_overload_set*> data;
  public:
-    static scope get_global_scope(const program_resources& pr) {
-      scope::resources = &pr;
-      scope::scope_stack = std::list<scope*>();
-      return scope();
-    }
-
-   static scope get_new_scope() {
-      return scope();
+   symbol() = default;
+   template<typename... Args>
+   symbol( const Args&... args ) : data( args... ) {}
+   template<typename... Args>
+   symbol( Args&&... args ) : data( std::forward<Args>( args )... ) {}
+   auto get_function_overload_set() {
+      auto ptr = std::get_if<const program_resources::function_overload_set*>( &data );
+      return ptr != nullptr ? *ptr : nullptr;
    }
-
-   scope& operator =( const scope& ) = delete;     //Evitar copias de un mismo scope
-   scope( const scope& ) = delete;                 //Evitar copias de un mismo scope
-
-   ~scope( ) {                                      //Si me muero yo que mis hijos apunten a mi padre y mi padre apunte a mis hijos y finalmente me borro
-      scope_stack.erase( iter );
+   auto get_variable() {
+      auto ptr = std::get_if<const token*>( &data );
+      return ptr != nullptr ? *ptr : nullptr;
    }
+};
 
-   // La implementación del scope si acaso se cambia mantienendo la funcionalidad en el caso especifico del proyecto
-   // pero me agrada la idea de que las siguientes funciones sean asi.
-
-   enum return_type {                              //Es posible que no se tengan que usar debido al std::any pero no me quiero arriesgar demasiado aun
-      NO_DECLARED = -1,
-      FUNCTION_MAP,
-      VARIABLE
-   };
-
+class scope {
+   std::unordered_map<std::string_view, const token*> variables;                //Tabla de variables
+ public:
    bool try_declare( const token& t ) {
-      return variables.emplace( t.source, t ).second;
+      return variables.emplace( t.source, &t ).second;
    }
 
-   std::pair<std::any, return_type> find_symbol( const token& t ) const {     //Devuelve un tipo diferente segun sea el caso
-      // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
-      // 1) no existe el símbolo (regresamos nullptr)
-      // 2) sí existe el símbolo y sí es variable
-      // 3) sí existe el símbolo pero es una función
-      auto it = std::find_if(std::make_reverse_iterator(std::next(iter)), scope_stack.rend(),
-      [&t](const auto& p) {
-         return p->variables.contains(t.source);
-      });
-      if( it != scope_stack.rend() ) {
-         return { (*it)->variables.at(t.source), VARIABLE };
-      }
-      try {
-         const auto& func_map = resources->function_overloads.at( t.source );
-         return { func_map, FUNCTION_MAP };
-         return { {}, NO_DECLARED };
-      } catch( const std::out_of_range& e ) {
-         return { {}, NO_DECLARED };
-      }
+   const token* find_variable( const token& t ) const {
+      auto it = variables.find( t.source );
+      return it != variables.end() ? it->second : nullptr;
    }
 
 };
 
-const program_resources* scope::resources = nullptr;
-std::list<scope*> scope::scope_stack = std::list<scope*>();
+class scope_stack {
+   std::list<scope> scope_list;
+   const program_resources& resources;
+ public:
+   scope_stack( const program_resources& pr )
+      : resources( pr ) {
+   }
+   void push() {
+      scope_list.emplace_back();
+   }
+   void pop() {
+      scope_list.pop_back();
+   }
+   scope& top() {
+      return scope_list.back();
+   }
+   const scope& top() const {
+      return scope_list.back();
+   }
+
+   symbol find_symbol( const token& t ) const {     //Devuelve un tipo diferente segun sea el caso
+      // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
+      // 1) no existe el símbolo (regresamos nullptr)
+      // 2) sí existe el símbolo y sí es variable
+      // 3) sí existe el símbolo pero es una función
+      for( auto it = scope_list.rbegin(); it != scope_list.rend(); ++it ) {
+         if( auto pt = it->find_variable( t ); pt != nullptr ) {
+            return pt;
+         }
+      }
+      if( auto it = resources.function_overloads.find( t.source ); it != resources.function_overloads.end() ) {
+         return &it->second;
+      }
+      return {};
+   }
+};
 
 #endif //SEMANTIC_TYPES_H
