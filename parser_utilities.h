@@ -1,8 +1,7 @@
 #ifndef PARSER_UTILITIES_H
 #define PARSER_UTILITIES_H
 
-#include "lexer_types.h"
-#include "parser_types.h"
+#include "lexer.h"
 
 #include <initializer_list>
 #include <algorithm>
@@ -44,7 +43,7 @@ const token* optional_match( const token*& t, token_type type ) {
 template<typename P>
 const token* match( const token*& t, P pred, const std::string& mes = "" ) {
    if( !pred( *t ) ) {
-      throw std::make_pair( *t, "Syntax Error: " + mes );
+      throw std::pair<token, std::string>( *t, mes );
    }
    return t++;
 }
