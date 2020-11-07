@@ -1,7 +1,7 @@
 #ifndef SEMANTIC_UTILITIES_H
 #define SEMANTIC_UTILITIES_H
 
-#include "lexer_types.h"
+#include "parser.h"
 
 #include <cstdlib>
 
@@ -44,7 +44,7 @@ template<typename T>
 T get_representation( const token& t, const std::string& error_mes = "" ) {
    auto [val, success] = get_representation<T>( t.source );
    if( !success ) {
-      throw std::make_pair( t, "Semantic Error:" + error_mes );
+      throw std::pair<token, std::string>( t, error_mes );
    }
    return val;
 }
@@ -91,10 +91,9 @@ std::pair<std::string, std::string_view::iterator> unquoted_str( const std::stri
 }
 
 std::string unquoted_str( const token& t, const std::string& error_mes = "" ) {
-   using namespace std::string_literals;
    auto [str, it] = unquoted_str( t.source );
    if( it != t.end() ) {
-      throw std::make_pair( token{ t.type, { it, t.end() } }, "Semantic Error:" + error_mes );
+      throw std::pair<token, std::string>( { t.type, { it, t.end() } }, error_mes );
    }
    return str;
 }

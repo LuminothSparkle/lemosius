@@ -1,7 +1,0 @@
-"prueba3.txt":5:10: Operator overload already defined
-	operator # infix (right 4) as something; 
-	         ^
-"prueba2.txt":5:10: Previously defined
-	operator # infix (right 4) as something; 
-	         ^
-

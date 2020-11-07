@@ -1,5 +1,4 @@
-#include "lexer_types.h"
-
+#include "lexer.h"
 #include "parser.h"
 #include "semantic_global.h"
 #include "inout.h"
@@ -71,19 +70,9 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
    std::string what;
 };
 
-template<typename P>
-void backtrack_tokens(std::vector<token>& tokens, const char*& ini, P pred) {
-   do {     // al menos el END_OF_INPUT
-      ini = tokens.back( ).begin( );
-      tokens.pop_back( );
-   } while (!tokens.empty( ) && pred(tokens.back( )));
-   tokens.push_back({ END_OF_INPUT, {ini, 0} });         // veo que en el lexer viene un len calculado; no creo que valga la pena (basta 0)
-}
-
 std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled )
 try {
-   path = std::filesystem::absolute( path );
-   if( compiled.contains( path ) ) {
+   if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
       return {};
    }
 
@@ -96,23 +85,23 @@ try {
    try {
       // Lexico 1
       lexer lex;
-      const char* ini  = pr.source_file.data( );
-      pr.header_tokens = lex.analisis( ini, PROC_K );
-      backtrack_tokens(pr.header_tokens, ini, is_access);
+      const char* ini    = pr.source_file.data( );
+      pr.header_tokens   = lex.tokenization( ini, PROC_K, "String not recognized." );
+      ini                = popback_tokens( pr.header_tokens, SEMICOLON_P );
       // Sintactico 1
-      const token* tok_p   = pr.header_tokens.data( );
-      pr.tree.header = parse_header( tok_p );
+      const token* tok_p = pr.header_tokens.data( );
+      pr.tree.header     = parse_header( tok_p );
       // Compilacion recursiva
-      auto old_dir = std::filesystem::current_path( );
+      auto old_dir       = std::filesystem::current_path( );
       std::filesystem::current_path( path.parent_path( ) );
       for( const auto& inc : pr.tree.header.includes ) {
          try {
-            auto res = compile( unquoted_str( *inc.file_name ), compiled );
+            auto res     = compile( unquoted_str( *inc.file_name ), compiled );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
          } catch( std::stack<compiler_error>& s ) {
-            s.push( compiler_error( compiled, std::make_pair( *inc.file_name, "In file included" ) ) );
+            s.push( compiler_error( compiled, { *inc.file_name, "In file included" } ) );
             throw;
          }
       }
@@ -121,10 +110,10 @@ try {
       pr.operator_overloads = generate_usables_operators( pr.inclusions, pr.tree.header.operators );
       // Lexico 2
       lex.overwrite_operators( std::move( get_operator_views( pr.operator_overloads ) ) );
-      pr.program_tokens = lex.analisis( ini, END_OF_INPUT );
+      pr.program_tokens     = lex.tokenization( ini, END_OF_INPUT, "String not recognized, if was an operator, maybe you not declared the operator." );
       // Sintactico 2
-      tok_p             = pr.program_tokens.data( );
-      pr.tree.functions = parse_program( tok_p, get_operator_decls( pr.operator_overloads ) );
+      tok_p                 = pr.program_tokens.data( );
+      pr.tree.functions     = parse_program( tok_p, get_operator_decls( pr.operator_overloads ) );
       pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
       analyze_program( pr );
       return pr;
@@ -134,9 +123,9 @@ try {
       throw std::stack<compiler_error>( { compiler_error( compiled, e ) } );
    }
 } catch( const std::filesystem::filesystem_error& e ) {
-   throw std::stack<compiler_error>( { compiler_error( path, std::make_pair( e, "Cannot stat path" ) ) } );
+   throw std::stack<compiler_error>( { compiler_error( path, { e, "Cannot stat path"         } ) } );
 } catch( const std::ifstream::failure& e ) {
-   throw std::stack<compiler_error>( { compiler_error( path, std::make_pair( e, "Cannot open or read file" ) ) } );
+   throw std::stack<compiler_error>( { compiler_error( path, { e, "Cannot open or read file" } ) } );
 }
 
 int main( int argc, char *argv[] )

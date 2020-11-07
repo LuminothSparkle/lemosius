@@ -1,2 +1,0 @@
-operator ! prefix as logical_not;                ## los símbolos que no se pueden usar en los operadores son . , ; " ( ) [ ] { }
-
