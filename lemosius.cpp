@@ -114,7 +114,9 @@ try {
       // Sintactico 2
       tok_p                 = pr.program_tokens.data( );
       pr.tree.functions     = parse_program( tok_p, get_operator_decls( pr.operator_overloads ) );
+      // Semántico 2
       pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
+      pr.builtin_overloads = generate_builtin_functions( );
       analyze_program( pr );
       return pr;
    } catch( const std::vector<std::pair<token, std::string>>& e ) {

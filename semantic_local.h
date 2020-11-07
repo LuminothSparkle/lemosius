@@ -34,19 +34,13 @@ void analyze_expression( const binary_expression& e, scope_stack& ss ) {
 
 void analyze_expression( const call_expression& e, scope_stack& ss ) {
    auto sym = ss.find_symbol( *e.function_name );
-   const program_resources::visible_function* call = nullptr;
-   if( auto func_set = sym.get_function_overload_set(); func_set != nullptr ) {
-      if( auto it = func_set->find( e.params.size() ); it != func_set->end() ) {
-         call = &it->second;
-      }
-   }
-   if( call == nullptr ) {
+   if(!sym.get_overload(e.params.size( )).second) {
       if( auto var = sym.get_variable(); var != nullptr ) {
          throw std::vector<std::pair<token, std::string>>( {
             { *var,             "Variable declared here." },
             { *e.function_name, "Used as function here."  }
          } );
-      } else if( sym.get_function_overload_set() != nullptr ) {
+      } else if( sym.get_overload_set() != nullptr) {
          throw std::pair<token, std::string>( *e.function_name, "Overload declared doesn't fit with number of arguments." );
       } else {
          throw std::pair<token, std::string>( *e.function_name, "Overload not declared." );

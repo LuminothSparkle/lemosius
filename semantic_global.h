@@ -43,7 +43,6 @@ auto generate_usables_operators( const std::vector<program_resources::inclusion>
 
 auto generate_usables_functions( const std::vector<program_resources::inclusion>& incs, const std::vector<function_declaration>& funcs ) {
    decltype( program_resources::function_overloads ) overloads;
-
    auto create_overload = [&overloads]( bool access, const function_declaration & func ) {
       const auto& [it, is_inserted] = overloads[func.name->source].emplace( func.parameters.size(), program_resources::visible_function{access, &func} );
       if( !is_inserted ) {
@@ -68,6 +67,29 @@ auto generate_usables_functions( const std::vector<program_resources::inclusion>
    return overloads;
 }
 
+auto generate_builtin_functions( ) {
+   decltype( program_resources::builtin_overloads ) overloads = {
+      { "addition", { 2 } },
+      { "subtraction", { 2 } },
+      /* etc
+         addition       de dos operandos
+         subtraction    de dos operandos
+         product        de dos operandos
+         division       de dos operandos
+         plus           de un operando
+         minus          de un operando
+         less_equal     de dos operandos
+         greater        de dos operandos
+         greater_equal  de dos operandos
+         equal          de dos operandos
+         not_equal      de dos operandos
+         print          de un operando          // ni modo, el lenguaje por ahoraes de juguete
+         read           ¿de cero operandos?     // var a = read( );         como el lenguaje no tiene paso por referencia, sería lo más consistente
+      */
+   };
+   return overloads;
+}
+
 auto get_operator_views( const decltype( program_resources::operator_overloads )& overloads ) {
    std::vector<std::string_view> res;
    for( const auto& [str_view, overload] : overloads ) {
@@ -87,16 +109,16 @@ auto get_operator_decls( const decltype( program_resources::operator_overloads )
 }
 
 void analyze_program( const program_resources& pr ) {
+   scope_stack global( pr );
+
    for( const auto& [sv, overload] : pr.operator_overloads ) {
       for( const auto& [type, vop] : overload ) {
          const auto& [access, decl] = vop;
-         auto it = pr.function_overloads.find( decl->function->source );
-         if( it == pr.function_overloads.end() || ( type == INFIX_K && !it->second.contains( 2 ) ) || ( type != INFIX_K && !it->second.contains( 1 ) ) ) {
+         if(!global.find_symbol( *decl->function ).get_overload((type == INFIX_K ? 2 : 1)).second) {
             throw std::pair<token, std::string>( *decl->function, "Operator handler function doesn't exist." );
          }
       }
    }
-   scope_stack global( pr );
    for( const auto& f : pr.tree.functions ) {
       analyze_function( f, global );
    }

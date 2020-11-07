@@ -16,8 +16,8 @@ struct program_resources {
    struct inclusion;
    struct visible_operator;
    struct visible_function;
-   using function_overload_set = std::map<std::size_t, visible_function>;
    using operator_overload_set = std::map<token_type, visible_operator>;
+   using function_overload_set = std::map<std::size_t, visible_function>;
 
    std::filesystem::path source_path;
    std::vector<char>     source_file;
@@ -28,6 +28,8 @@ struct program_resources {
    std::vector<inclusion> inclusions;
    std::unordered_map<std::string_view, operator_overload_set> operator_overloads;
    std::unordered_map<std::string_view, function_overload_set> function_overloads;
+   std::unordered_map<std::string_view, std::set<std::size_t>> builtin_overloads;      // ahorita cada builtin sólo tiene una sobrecarga, pero por el nombre es mejor
+                                                                                       // poner un std::set de una vez (además quedó alineado :) )
 };
 
 struct program_resources::inclusion {
@@ -46,20 +48,34 @@ struct program_resources::visible_function {
 };
 
 class symbol {
-   std::variant<const token*, const program_resources::function_overload_set*> data;
+   std::variant<const token*, std::pair<const program_resources::function_overload_set*, const std::set<std::size_t>*>> data;
  public:
-   symbol() = default;
-   template<typename... Args>
-   symbol( const Args&... args ) : data( args... ) {}
    template<typename... Args>
    symbol( Args&&... args ) : data( std::forward<Args>( args )... ) {}
-   auto get_function_overload_set() {
-      auto ptr = std::get_if<const program_resources::function_overload_set*>( &data );
-      return ptr != nullptr ? *ptr : nullptr;
-   }
+
    auto get_variable() {
       auto ptr = std::get_if<const token*>( &data );
       return ptr != nullptr ? *ptr : nullptr;
+   }
+
+   auto get_overload_set() {
+      auto ptr = std::get_if<std::pair<const program_resources::function_overload_set*, const std::set<std::size_t>*>>( &data );
+      return ptr != nullptr ? ptr : nullptr;
+   }
+
+   std::pair<const program_resources::visible_function*, bool> get_overload(std::size_t arity) {
+      if (auto ptr = get_overload_set(); ptr != nullptr) {
+         if (ptr->first != nullptr) {
+            if (auto iter = ptr->first->find(arity); iter != ptr->first->end( )) {
+               return { &iter->second, true };
+            }
+         }
+         if (ptr->second != nullptr && ptr->second->contains(arity)) {
+            return { nullptr, true };
+         }
+      }
+
+      return { };
    }
 };
 
@@ -74,7 +90,6 @@ class scope {
       auto it = variables.find( t.source );
       return it != variables.end() ? it->second : nullptr;
    }
-
 };
 
 class scope_stack {
@@ -107,10 +122,15 @@ class scope_stack {
             return pt;
          }
       }
+
+      std::pair<const program_resources::function_overload_set*, const std::set<std::size_t>*> overload_set;
       if( auto it = resources.function_overloads.find( t.source ); it != resources.function_overloads.end() ) {
-         return &it->second;
+         overload_set.first = &it->second;
       }
-      return {};
+      if( auto it = resources.builtin_overloads.find( t.source ); it != resources.builtin_overloads.end()) {
+         overload_set.second = &it->second;
+      }
+      return (overload_set.first != nullptr || overload_set.second != nullptr ? symbol{overload_set} : symbol{ });
    }
 };
 
