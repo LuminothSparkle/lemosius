@@ -8,68 +8,68 @@
 #include <string>
 #include <utility>
 
-bool is_access( const token& t ) {
-   return t == PUBLIC_K || t == PRIVATE_K;
+bool is_access( const token& tok ) {
+   return tok == PUBLIC_K || tok == PRIVATE_K;
 }
 
-bool is_position( const token& t ) {
-   return t == PREFIX_K || t == SUFFIX_K || t == INFIX_K;
+bool is_position( const token& tok ) {
+   return tok == PREFIX_K || tok == SUFFIX_K || tok == INFIX_K;
 }
 
-bool is_associativity( const token& t ) {
-   return t == LEFT_K || t == RIGHT_K;
+bool is_associativity( const token& tok ) {
+   return tok == LEFT_K || tok == RIGHT_K;
 }
 
-bool is_literal( const token& t ) {
-   return t == IDENTIFIER_L || t == NUMBER_L;
+bool is_literal( const token& tok ) {
+   return tok == IDENTIFIER_L || tok == NUMBER_L;
 }
 
 auto match_any( const std::initializer_list<token_type>& il ) {
-   return [&il]( token_type t ) {
-      return std::find( il.begin( ), il.end( ), t ) != il.end( );
+   return [&il]( token_type tok ) {
+      return std::find( il.begin( ), il.end( ), tok ) != il.end( );
    };
 }
 
-template<typename P>
-const token* optional_match( const token*& t, P pred ) {
-   return ( pred( *t ) ? t++ : nullptr );
+template<typename Pred>
+const token* optional_match( const token*& tok_ptr, Pred P ) {
+   return ( P( *tok_ptr ) ? tok_ptr++ : nullptr );
 }
 
-const token* optional_match( const token*& t, token_type type ) {
-   return optional_match( t, match_any( { type } ) );
+const token* optional_match( const token*& tok_ptr, token_type type ) {
+   return optional_match( tok_ptr, match_any( { type } ) );
 }
 
 // Template de match con predicado
-template<typename P>
-const token* match( const token*& t, P pred, const std::string& mes = "" ) {
-   if( !pred( *t ) ) {
-      throw std::pair<token, std::string>( *t, mes );
+template<typename Pred>
+const token* match( const token*& tok_ptr, Pred P, const std::string& err_mes = "" ) {
+   if( !P( *tok_ptr ) ) {
+      throw std::pair<token, std::string>( *tok_ptr, err_mes );
    }
-   return t++;
+   return tok_ptr++;
 }
 
-const token* match( const token*& t, token_type type, const std::string& mes = "" ) {
-   return match( t, match_any( { type } ), mes );
+const token* match( const token*& tok_ptr, token_type type, const std::string& err_mes = "" ) {
+   return match( tok_ptr, match_any( { type } ), err_mes );
 }
 
-bool is_prefix_operator( const operator_map& opm, const token& t ) {
-   return opm.prefix_operators.contains( t.str() );
+bool is_prefix_operator( const operator_map& opm, const token& tok ) {
+   return opm.prefix_operators.contains( std::string_view( tok ) );
 }
 
-bool is_suffix_operator( const operator_map& opm, const token& t ) {
-   return opm.suffix_operators.contains( t.str() );
+bool is_suffix_operator( const operator_map& opm, const token& tok ) {
+   return opm.suffix_operators.contains( std::string_view( tok ) );
 }
 
-bool is_binary_operator( const operator_map& opm, const token& t ) {
-   return opm.infix_operators.contains( t.str() );
+bool is_binary_operator( const operator_map& opm, const token& tok ) {
+   return opm.infix_operators.contains( std::string_view( tok ) );
 }
 
-bool is_left_assoc( const operator_map& opm, const token& t ) {
-   return opm.infix_operators.at( t.str() ).second;
+bool is_left_assoc( const operator_map& opm, const token& tok ) {
+   return opm.infix_operators.at( std::string_view( tok ) ).second;
 }
 
-std::int64_t precedence( const operator_map& opm, const token& t ) {
-   return opm.infix_operators.at( t.str() ).first;
+std::int64_t precedence( const operator_map& opm, const token& tok ) {
+   return opm.infix_operators.at( std::string_view( tok ) ).first;
 }
 
 #endif
