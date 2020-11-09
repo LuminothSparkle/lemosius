@@ -15,55 +15,50 @@
 #include <array>
 #include <algorithm>
 #include <span>
+#include <tuple>
 
 using map_path_source = std::map<std::filesystem::path, std::span<char>>;
 
 struct compiler_error {     // cada vez que se eleva un error que es capturado en el driver, se construye el mensaje; en cuanto éste esté construido, nos podemos despreocupar de los recursos del programa
-   static unsigned line_of( const token& t, const char* ini ) {
-      return 1 + std::count( ini, t.source.begin( ), '\n' );
+   static std::size_t line_of( const token& tok, const char* first ) {
+      return 1 + std::count( first, tok.begin( ), '\n' );
    }
 
-   static unsigned col_of( const token& t, const char* ini ) {
-      return 1 + ( t.begin( ) - std::find( std::reverse_iterator( t.begin( ) ), std::reverse_iterator( ini ), '\n' ).base( ) );
+   static std::size_t col_of( const token& tok, const char* first ) {
+      return 1 + ( tok.begin( ) - std::find( std::reverse_iterator( tok.begin( ) ), std::reverse_iterator( first ), '\n' ).base( ) );
    }
 
-   static std::string_view view_line_of( const token& t, const char* first, const char* last ) {
-      auto        data     = std::find( std::reverse_iterator( t.begin( ) ), std::reverse_iterator( first ), '\n' ).base( );
-      std::size_t data_len = std::find( t.begin( ),                       last,                        '\n' ) - data;
-      return { data, data_len };
-   }
-
-   static std::string_view view_of( const token& t, auto len, const char* fin ) {
-      auto        data     = t.begin( );
-      std::size_t data_len = std::find( t.begin( ), std::min( fin - t.begin( ), len ) + t.begin( ), '\n' ) - t.begin( );
-      return { data, data_len };
+   static std::string_view view_line_of( const token& tok, const char* first, const char* last ) {
+      auto        data = std::find( std::reverse_iterator( tok.begin( ) ), std::reverse_iterator( first ), '\n' ).base( );
+      std::size_t len  = std::find( tok.begin( ),                          last,                           '\n' ) - data;
+      return { data, len };
    }
 
    compiler_error( const map_path_source& compiled, const std::vector<std::pair<token, std::string>>& ee ) {
-      auto obtain_file_data = [&compiled]( const token & t ) {
-         return *std::find_if( compiled.begin(), compiled.end(),
-         [&t]( const auto & ps ) {
-            return &ps.second.front() <= &t.front() && &t.back() <= &ps.second.back();
+      auto obtain_file_data = [&compiled]( const token & tok ) {
+         auto [file_path, file_data] = *std::find_if( compiled.begin( ), compiled.end( ),
+         [&tok]( const auto & path_source ) {
+            const auto& source = path_source.second;
+            return &source.front( ) <= &tok.front( ) && &tok.back( ) <= &source.back( );
          } );
+         return std::make_tuple( file_path, &file_data.front( ), &file_data.back( ) );
       };
       std::ostringstream oss;
-      for( const auto& [t, mes] : ee ) {
-         auto [file_path, file_data] = obtain_file_data( t );
-         auto file_begin = &file_data.front(), file_end = &file_data.back();
-         oss << file_path.filename() << ":" << line_of( t, file_begin ) << ":" << col_of( t, file_begin ) << ": " << mes << "\n";
-         //oss << "\t" << view_of(t, 10, file_end) << "\n";
-         oss << "\t" << view_line_of( t, file_begin, file_end ) << "\n";
-         oss << "\t" << std::string( col_of( t, file_begin ) - 1, ' ' ) << "^\n";
+      for( const auto& [tok, mes] : ee ) {
+         auto [file_path, file_begin, file_end] = obtain_file_data( tok );
+         oss << file_path.filename( ) << ":" << line_of( tok, file_begin ) << ":" << col_of( tok, file_begin ) << ": " << mes << "\n";
+         oss << "\t" << view_line_of( tok, file_begin, file_end )          << "\n";
+         oss << "\t" << std::string( col_of( tok, file_begin ) - 1, ' ' )  << "^\n";
       }
       what = std::move( oss ).str( );
    }
 
-   compiler_error( const map_path_source& compiled, const std::pair<token, std::string>& e )
-      : compiler_error( compiled, std::vector<std::pair<token, std::string>>( { e } ) ) { }
+   compiler_error( const map_path_source& compiled, const std::pair<token, std::string>& err )
+      : compiler_error( compiled, std::vector<std::pair<token, std::string>>( { err } ) ) { }
 
-   compiler_error( const std::filesystem::path& path, const std::pair<std::exception, std::string>& e ) {
+   compiler_error( const std::filesystem::path& path, const std::pair<std::exception, std::string>& err ) {
       std::ostringstream oss;
-      oss << path.filename( ) << ": " << e.second << "\n";
+      oss << path.filename( ) << ": " << err.second << "\n";
       what = std::move( oss ).str( );
    }
 
@@ -71,32 +66,31 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
 };
 
 std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled )
+
 try {
    if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
       return {};
    }
-
    program_resources pr;
    pr.source_path = path;
    pr.source_file = read_file( path );
-
    compiled.try_emplace( pr.source_path, pr.source_file );
-
    try {
       // Lexico 1
       lexer lex;
-      const char* ini    = pr.source_file.data( );
-      pr.header_tokens   = lex.tokenization( ini, PROC_K, "String not recognized." );
-      ini                = popback_tokens( pr.header_tokens, SEMICOLON_P );
+      const char* file_cptr = pr.source_file.data( );
+      pr.header_tokens      = lex.tokenization( file_cptr, PROC_K, "String not recognized." );
+      file_cptr             = unget_tokens_until( pr.header_tokens, std::not_fn( is_access ) );
       // Sintactico 1
-      const token* tok_p = pr.header_tokens.data( );
-      pr.tree.header     = parse_header( tok_p );
+      const token* tok_ptr  = pr.header_tokens.data( );
+      pr.tree.header        = parse_header( tok_ptr );
       // Compilacion recursiva
-      auto old_dir       = std::filesystem::current_path( );
+      auto old_dir          = std::filesystem::current_path( );
       std::filesystem::current_path( path.parent_path( ) );
       for( const auto& inc : pr.tree.header.includes ) {
+         auto unquoted_file_name = unquoted_str( *inc.file_name );
          try {
-            auto res     = compile( unquoted_str( *inc.file_name ), compiled );
+            auto res = compile( unquoted_file_name, compiled );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
@@ -109,26 +103,28 @@ try {
       // Semantico 1
       pr.operator_overloads = generate_usables_operators( pr.inclusions, pr.tree.header.operators );
       // Lexico 2
-      lex.overwrite_operators( std::move( get_operator_views( pr.operator_overloads ) ) );
-      pr.program_tokens     = lex.tokenization( ini, END_OF_INPUT, "String not recognized, if was an operator, maybe you not declared the operator." );
+      lex.overwrite_operators( pr.get_operator_views( ) );
+      pr.program_tokens     = lex.tokenization( file_cptr, END_OF_INPUT, "String not recognized, if was an operator, maybe you not declared the operator." );
       // Sintactico 2
-      tok_p                 = pr.program_tokens.data( );
-      pr.tree.functions     = parse_program( tok_p, get_operator_decls( pr.operator_overloads ) );
+      tok_ptr               = pr.program_tokens.data( );
+      pr.tree.functions     = parse_program( tok_ptr, pr.get_operator_decls( ) );
       pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
+      // Semantico 2
       analyze_program( pr );
       return pr;
-   } catch( const std::vector<std::pair<token, std::string>>& e ) {
-      throw std::stack<compiler_error>( { compiler_error( compiled, e ) } );
-   } catch( const std::pair<token, std::string>& e ) {
-      throw std::stack<compiler_error>( { compiler_error( compiled, e ) } );
+   } catch( const std::vector<std::pair<token, std::string>>& err ) {
+      throw std::stack<compiler_error>( { compiler_error( compiled, err ) } );
+   } catch( const std::pair<token, std::string>& err ) {
+      throw std::stack<compiler_error>( { compiler_error( compiled, err ) } );
    }
-} catch( const std::filesystem::filesystem_error& e ) {
-   throw std::stack<compiler_error>( { compiler_error( path, { e, "Cannot stat path"         } ) } );
-} catch( const std::ifstream::failure& e ) {
-   throw std::stack<compiler_error>( { compiler_error( path, { e, "Cannot open or read file" } ) } );
+} catch( const std::filesystem::filesystem_error& err ) {
+   throw std::stack<compiler_error>( { compiler_error( path, { err, "Cannot stat path"         } ) } );
+} catch( const std::ifstream::failure& err ) {
+   throw std::stack<compiler_error>( { compiler_error( path, { err, "Cannot open or read file" } ) } );
 }
 
 int main( int argc, char *argv[] )
+
 try {
    if( argc != 2 ) {
       std::cout << "Usage:" << argv[0] << " <path_file_name>\n";
@@ -136,13 +132,13 @@ try {
    }
    map_path_source compiled;
    std::cout << compile( argv[1], compiled ).value( );
-} catch( std::stack<compiler_error>& s ) {
-   while( !s.empty( ) ) {
-      std::cout << s.top( ).what << "\n";
-      s.pop( );
+} catch( std::stack<compiler_error>& sce ) {
+   while( !sce.empty( ) ) {
+      std::cout << sce.top( ).what << "\n";
+      sce.pop( );
    }
-} catch( const std::exception& e ) {
-   std::cout << e.what( ) << "\n";
+} catch( const std::exception& err ) {
+   std::cout << err.what( ) << "\n";
 } catch( ... ) {
    std::cout << "Unknown error\n";
 }
