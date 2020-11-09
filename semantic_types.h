@@ -12,13 +12,28 @@
 #include <set>
 #include <variant>
 
-struct program_resources {
-   struct inclusion;
-   struct visible_operator;
-   struct visible_function;
-   using function_overload_set = std::map<std::size_t, visible_function>;
-   using operator_overload_set = std::map<token_type, visible_operator>;
+//Dijiste que realmente no habria colision de nombres para el proyecto asi que creo que vale la pena sacarlos, se estan usando en varios lados y es mejor evitar los decltype con program_resources::
+//Ademas de que las demas estructuras eran así como syntax tree y operator_declaration, mejor ser consistentes y no creo que valga la pena andar juntando todo
 
+struct visible_operator {
+   bool                        access;
+   const operator_declaration* declaration;
+};
+
+struct visible_function {
+   bool                        access;
+   const function_declaration* declaration;
+};
+
+using operator_overload_set = std::map<token_type,  visible_operator>;
+using function_overload_set = std::map<std::size_t, visible_function>;
+using builtin_overload_set  = std::set<std::size_t>;                   //Yo creo que si hay necesidad de saber de esta interface para el programador
+//ya que realmente usamos su tipo en el analisis del programa, y hace claro el codigo sin tanto decltype y program_resources::
+//Además tu mismo dijiste que realmente no habrá colisiones con nombres, así que no veo necesidad de hacerlo
+
+struct inclusion;
+
+struct program_resources {
    std::filesystem::path source_path;
    std::vector<char>     source_file;
    std::vector<token>    header_tokens;
@@ -28,51 +43,90 @@ struct program_resources {
    std::vector<inclusion> inclusions;
    std::unordered_map<std::string_view, operator_overload_set> operator_overloads;
    std::unordered_map<std::string_view, function_overload_set> function_overloads;
+   std::unordered_map<std::string_view, builtin_overload_set> builtin_overloads = {
+      { "addition",      { 2 } },
+      { "subtraction",   { 2 } },
+      { "product",       { 2 } },
+      { "division",      { 2 } },
+      { "plus",          { 1 } },
+      { "minus",         { 1 } },
+      { "less",          { 2 } },
+      { "less_equal",    { 2 } },
+      { "greater",       { 2 } },
+      { "greater_equal", { 2 } },
+      { "equal",         { 2 } },
+      { "not_equal",     { 2 } },
+      { "assign",        { 2 } },
+      { "print",         { 1 } }, //print          de un operando          // ni modo, el lenguaje por ahoraes de juguete
+      { "print_err",     { 1 } },
+      { "read",          { 0 } }, //read           ¿de cero operandos?     // var a = read( );         como el lenguaje no tiene paso por referencia, sería lo más consistente
+   };
+
+   auto get_operator_views( ) const {
+      std::vector<std::string_view> res;
+      for( const auto& [str_view, overload] : operator_overloads ) {
+         res.push_back( str_view );
+      }
+      return res;
+   }
+
+   auto get_operator_decls( ) const {
+      std::vector<operator_declaration> res;
+      for( const auto& [str_view, overload] : operator_overloads ) {
+         for( const auto& [pos, vop] : overload ) {
+            res.push_back( *vop.declaration );
+         }
+      }
+      return res;
+   }
+
 };
 
-struct program_resources::inclusion {
+struct inclusion {
    bool              access;
    program_resources resources;
 };
 
-struct program_resources::visible_operator {
-   bool                        access;
-   const operator_declaration* declaration;
-};
-
-struct program_resources::visible_function {
-   bool                        access;
-   const function_declaration* declaration;
-};
-
-class symbol {
-   std::variant<const token*, const program_resources::function_overload_set*> data;
- public:
-   symbol() = default;
-   template<typename... Args>
-   symbol( const Args&... args ) : data( args... ) {}
-   template<typename... Args>
-   symbol( Args&&... args ) : data( std::forward<Args>( args )... ) {}
-   auto get_function_overload_set() {
-      auto ptr = std::get_if<const program_resources::function_overload_set*>( &data );
+struct symbol { //Solo contiene datos con funciones auxiliares
+   std::variant<const token*, std::pair<const function_overload_set*, const builtin_overload_set*>> data;
+   auto get_variable( ) const {
+      auto ptr = std::get_if<0>( &data );
       return ptr != nullptr ? *ptr : nullptr;
    }
-   auto get_variable() {
-      auto ptr = std::get_if<const token*>( &data );
-      return ptr != nullptr ? *ptr : nullptr;
+   auto get_user_overload_set( ) const {
+      auto ptr = std::get_if<1>( &data );
+      return ptr != nullptr ? ptr->first : nullptr;
+   }
+   auto get_builtin_overload_set( ) const {
+      auto ptr = std::get_if<1>( &data );
+      return ptr != nullptr ? ptr->second : nullptr;
+   }
+   auto get_overload_sets( ) const {
+      return std::get_if<1>( &data );
+   }
+   std::pair<const visible_function*, bool> get_overload( std::size_t arity ) const {
+      if( auto user_ptr = get_user_overload_set( ); user_ptr != nullptr ) {
+         if( auto iter = user_ptr->find( arity ); iter != user_ptr->end( ) ) {
+            return { &iter->second, true };
+         }
+      }
+      if( auto builtin_ptr = get_builtin_overload_set( ); builtin_ptr != nullptr ) {
+         if( auto iter = builtin_ptr->find( arity ); iter != builtin_ptr->end( ) ) {
+            return { nullptr, true };
+         }
+      }
+      return { nullptr, false };
    }
 };
 
-class scope {
-   std::unordered_map<std::string_view, const token*> variables;                //Tabla de variables
- public:
-   bool try_declare( const token& t ) {
-      return variables.emplace( t.source, &t ).second;
+struct scope { //Solo contiene datos con funciones auxiliares
+   std::unordered_map<std::string_view, const token*> variables; //Tabla de variables
+   bool try_declare( const token& tok ) {
+      return variables.emplace( std::string_view( tok ), &tok ).second;
    }
-
-   const token* find_variable( const token& t ) const {
-      auto it = variables.find( t.source );
-      return it != variables.end() ? it->second : nullptr;
+   const token* find_variable( const token& tok ) const {
+      auto iter = variables.find( std::string_view( tok ) );
+      return iter != variables.end( ) ? iter->second : nullptr;
    }
 
 };
@@ -84,33 +138,39 @@ class scope_stack {
    scope_stack( const program_resources& pr )
       : resources( pr ) {
    }
-   void push() {
-      scope_list.emplace_back();
+   void push( ) {
+      scope_list.emplace_back( );
    }
-   void pop() {
-      scope_list.pop_back();
+   void pop( ) {
+      scope_list.pop_back( );
    }
-   scope& top() {
-      return scope_list.back();
+   scope& top( ) {
+      return scope_list.back( );
    }
-   const scope& top() const {
-      return scope_list.back();
+   const scope& top( ) const {
+      return scope_list.back( );
    }
 
-   symbol find_symbol( const token& t ) const {     //Devuelve un tipo diferente segun sea el caso
+   symbol find_symbol( const token& tok ) const {     //Devuelve un tipo diferente segun sea el caso
       // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
       // 1) no existe el símbolo (regresamos nullptr)
       // 2) sí existe el símbolo y sí es variable
       // 3) sí existe el símbolo pero es una función
-      for( auto it = scope_list.rbegin(); it != scope_list.rend(); ++it ) {
-         if( auto pt = it->find_variable( t ); pt != nullptr ) {
-            return pt;
+      for( auto iter = scope_list.rbegin(); iter != scope_list.rend( ); ++iter ) {
+         if( auto tok_ptr = iter->find_variable( tok ); tok_ptr != nullptr ) {
+            return { tok_ptr };
          }
       }
-      if( auto it = resources.function_overloads.find( t.source ); it != resources.function_overloads.end() ) {
-         return &it->second;
+      const function_overload_set* user_overloads    = nullptr;
+      const builtin_overload_set*  builtin_overloads = nullptr;
+      std::string_view symbol( tok );
+      if( auto iter = resources.function_overloads.find( symbol ); iter != resources.function_overloads.end( ) ) {
+         user_overloads = &iter->second;
       }
-      return {};
+      if( auto iter = resources.builtin_overloads.find( symbol ); iter != resources.builtin_overloads.end( ) ) {
+         builtin_overloads = &iter->second;
+      }
+      return { std::make_pair( user_overloads, builtin_overloads ) };
    }
 };
 
