@@ -7,7 +7,7 @@ include "prueba2.lem";
 ##<include                                            ##<Error sintactico
 ##<include infix                                      ##<Error sintactico
 
-##<operator * infix (left 9) as pub2_mult;            ##Redeclaración de *
+##<operator * infix (left 9) as pub2_mult;            ##<Redeclaración de *
 ##<operator // infix (left 9) as priv2_div;           ##<Utilización de priv2_div que es privada
 ##<operator ++ infix (left 9) as pub2_hashtag;        ##<Sobrecarga no valida, no existe pub2_hashtag con dos argumentos
 ##<operator -- infix (left 9) as no_existe;           ##<Sobrecarga no valida, no existe ninguna funcion no_existe
@@ -16,8 +16,9 @@ include "prueba2.lem";
 ##<operator                                           ##<Error sintactico
 ##<operator --                                        ##<Error sintactico
 ##<operator infix (left -1) as;                       ##<Error sintactico
+##<operator -* infix (left 0) as pub2_minus           ##<Error sintactico
 
-###<No puede sobrecargarse de nuevo>### 
+###<No puede sobrecargarse de nuevo>##
 private proc pub2_mult(a,b) {
     return a * b;
 }
