@@ -1,11 +1,11 @@
 #include "lexer.h"
 #include "parser.h"
 #include "semantic_global.h"
+#include "codegen.h"
 #include "inout.h"
 #include "debugging.h"
 
 #include <cstddef>
-
 #include <iostream>
 #include <map>
 #include <stack>
@@ -16,6 +16,8 @@
 #include <algorithm>
 #include <span>
 #include <tuple>
+#include <sstream>
+#include <string>
 
 using map_path_source = std::map<std::filesystem::path, std::span<char>>;
 
@@ -65,7 +67,7 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
    std::string what;
 };
 
-std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled )
+std::optional<program_resources> compile( std::filesystem::path path, map_path_source& compiled, std::ostream& os)
 
 try {
    if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
@@ -90,7 +92,7 @@ try {
       for( const auto& inc : pr.tree.header.includes ) {
          auto unquoted_file_name = unquoted_str( *inc.file_name );
          try {
-            auto res = compile( unquoted_file_name, compiled );
+            auto res = compile( unquoted_file_name, compiled, os );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
@@ -110,7 +112,9 @@ try {
       pr.tree.functions     = parse_program( tok_ptr, pr.get_operator_decls( ) );
       pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
       // Semantico 2
-      analyze_program( pr );
+      resolution_table tbl = analyze_program( pr );
+      // Codegen
+      write_program(pr, tbl, os);
       return pr;
    } catch( const std::vector<std::pair<token, std::string>>& err ) {
       throw std::stack<compiler_error>( { compiler_error( compiled, err ) } );
@@ -130,8 +134,12 @@ try {
       std::cout << "Usage:" << argv[0] << " <path_file_name>\n";
       return 0;
    }
+
    map_path_source compiled;
-   std::cout << compile( argv[1], compiled ).value( );
+   std::ostringstream oss;
+   std::cout << compile( argv[1], compiled, oss ).value( );
+   std::ofstream ofs("salida.txt");       // calcular la ruta correcta
+   ofs << std::move(oss).str( );
 } catch( std::stack<compiler_error>& sce ) {
    while( !sce.empty( ) ) {
       std::cout << sce.top( ).what << "\n";

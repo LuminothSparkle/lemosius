@@ -68,20 +68,26 @@ auto generate_usables_functions( const std::vector<inclusion>& incs, const std::
    return overloads;
 }
 
-void analyze_program( const program_resources& pr ) {
+resolution_table analyze_program( const program_resources& pr ) {
    scope_stack global( pr );
+   resolution_table tbl{pr.operator_overloads};
+
    for( const auto& [sv, overload] : pr.operator_overloads ) {
       for( const auto& [type, vop] : overload ) {
          const auto& handler_func = *vop.declaration->function;
          const auto  arity        = type == INFIX_K ? 2 : 1;
-         if( !global.find_symbol( handler_func ).get_overload( arity ).second ) {
+         if (auto [func_decl, exists] = global.find_symbol( handler_func ).get_overload( arity ); exists) {
+            tbl.operator_lookup[sv].emplace(type, func_decl);
+         } else {
             throw std::pair<token, std::string>( handler_func, "Operator handler function doesn't exist." );
          }
       }
    }
    for( const auto& f : pr.tree.functions ) {
-      analyze_function( f, global );
+      analyze_function( f, global, tbl);
    }
+
+   return tbl;
 }
 
 

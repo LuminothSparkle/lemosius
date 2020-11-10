@@ -6,123 +6,139 @@
 
 #include <string>
 
-void analyze_expression( const expression&, scope_stack& );
+void analyze_expression( const expression&, scope_stack&, resolution_table&);
 
-void analyze_expression( const terminal_expression& e, scope_stack& ss ) {
-   if( *e.tok_ptr == IDENTIFIER_L && ss.find_symbol( *e.tok_ptr ).get_variable( ) == nullptr ) {
-      throw std::pair<token, std::string>( *e.tok_ptr, "Variable not declared." );
+void analyze_expression( const terminal_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   if( *e.tok_ptr == IDENTIFIER_L) {
+      if (auto var_decl = ss.find_symbol(e.tok_ptr->source).get_variable( ); var_decl != nullptr ) {
+         tbl.variable_lookup.emplace(e.tok_ptr, var_decl);
+      } else {
+         throw std::pair<token, std::string>( *e.tok_ptr, "Variable not declared." );
+      }
    }
 }
 
-void analyze_expression( const prefix_expression& e, scope_stack& ss ) {
-   analyze_expression( *e.exp, ss );
+void analyze_expression( const prefix_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   tbl.function_lookup.emplace(e.op, tbl.operator_lookup[e.op->source][PREFIX_K]);
+   analyze_expression( *e.exp, ss, tbl);
 }
 
-void analyze_expression( const suffix_expression& e, scope_stack& ss ) {
-   analyze_expression( *e.exp, ss );
+void analyze_expression( const suffix_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   tbl.function_lookup.emplace(e.op, tbl.operator_lookup[e.op->source][SUFFIX_K]);
+   analyze_expression( *e.exp, ss, tbl);
 }
 
-void analyze_expression( const binary_expression& e, scope_stack& ss ) {
-   analyze_expression( *e.exp1, ss );
-   analyze_expression( *e.exp2, ss );
+void analyze_expression( const binary_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   tbl.function_lookup.emplace(e.op, tbl.operator_lookup[e.op->source][INFIX_K]);
+   analyze_expression( *e.exp1, ss, tbl);
+   analyze_expression( *e.exp2, ss, tbl);
 }
 
-void analyze_expression( const call_expression& e, scope_stack& ss ) {
-   auto sym = ss.find_symbol( *e.function_name );
-   if( auto var = sym.get_variable( ); var != nullptr ) {
+void analyze_expression( const call_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   auto sym = ss.find_symbol(e.function_name->source);
+   if( auto tk = sym.get_variable( ); tk != nullptr ) {
       throw std::vector<std::pair<token, std::string>>( {
          { *e.function_name, "Variable used as function."  },
-         { *var,             "Variable declaration." }
+         { *tk,              "Variable declaration." }
       } );
    }
-   const auto& [user_ptr, builtin_ptr] = *sym.get_overload_sets( );
-   if( user_ptr == nullptr && builtin_ptr == nullptr ) {
-      throw std::pair<token, std::string>( *e.function_name, "Builtin function doesn't exist and an overload is not declared." );
-   } else if( ( user_ptr == nullptr || !user_ptr->contains( e.params.size( ) ) ) && ( builtin_ptr == nullptr || !builtin_ptr->contains( e.params.size( ) ) ) ) {
-      throw std::pair<token, std::string>( *e.function_name, "Builtin function doesn't exist and none of overloads declared fit the number of arguments." );
+
+   if (auto [func_decl, exists] = sym.get_overload(e.params.size( )); exists) {
+      tbl.function_lookup.emplace(e.function_name, func_decl);
+   } else {
+      const auto& [user_ptr, builtin_ptr] = *sym.get_overload_sets( );
+      if( user_ptr == nullptr && builtin_ptr == nullptr ) {
+         throw std::pair<token, std::string>( *e.function_name, "Builtin function doesn't exist and an overload is not declared." );
+      } else {
+         throw std::pair<token, std::string>( *e.function_name, "Builtin function doesn't exist and none of the overloads declared fit the number of arguments." );
+      }
+   }
+
+   for (const auto& param : e.params) {
+      analyze_expression(*param, ss, tbl);
    }
 }
 
-void analyze_expression( const expression& e, scope_stack& ss ) {       // sí, if else if !
+void analyze_expression( const expression& e, scope_stack& ss, resolution_table& tbl ) {       // sí, if else if !
    if( typeid( e ) == typeid( terminal_expression ) ) {
-      return analyze_expression( dynamic_cast<const terminal_expression&>( e ), ss );
+      return analyze_expression( dynamic_cast<const terminal_expression&>( e ), ss, tbl);
    } else if( typeid( e ) == typeid( prefix_expression ) ) {
-      return analyze_expression( dynamic_cast<const prefix_expression&>( e ),   ss );
+      return analyze_expression( dynamic_cast<const prefix_expression&>( e ),   ss, tbl);
    } else if( typeid( e ) == typeid( suffix_expression ) ) {
-      return analyze_expression( dynamic_cast<const suffix_expression&>( e ),   ss );
+      return analyze_expression( dynamic_cast<const suffix_expression&>( e ),   ss, tbl);
    } else if( typeid( e ) == typeid( binary_expression ) ) {
-      return analyze_expression( dynamic_cast<const binary_expression&>( e ),   ss );
+      return analyze_expression( dynamic_cast<const binary_expression&>( e ),   ss, tbl);
    } else if( typeid( e ) == typeid( call_expression ) ) {
-      return analyze_expression( dynamic_cast<const call_expression&>( e ),     ss );
+      return analyze_expression( dynamic_cast<const call_expression&>( e ),     ss, tbl);
    }
 }
 
-void analyze_statement( const statement&, scope_stack& );
+void analyze_statement( const statement&, scope_stack&, resolution_table&);
 
-void analyze_statement( const sequence_statement& s, scope_stack& ss ) {
+void analyze_statement( const sequence_statement& s, scope_stack& ss, resolution_table& tbl ) {
    ss.push( );
    for( const auto& stmt : s.body ) {
-      analyze_statement( *stmt, ss );
+      analyze_statement( *stmt, ss, tbl);
    }
    ss.pop( );
 }
 
-void analyze_statement( const expression_statement& s, scope_stack& ss ) {
+void analyze_statement( const expression_statement& s, scope_stack& ss, resolution_table& tbl ) {
    if( s.body != nullptr ) {
-      analyze_expression( *s.body, ss );
+      analyze_expression( *s.body, ss, tbl);
    }
 }
 
-void analyze_statement( const if_statement& s, scope_stack& ss ) {
+void analyze_statement( const if_statement& s, scope_stack& ss, resolution_table& tbl ) {
    for( const auto& condition : s.conditions ) {
-      analyze_expression( *condition, ss );
+      analyze_expression( *condition, ss, tbl);
    }
    for( const auto& body : s.bodys ) {
-      analyze_statement( *body, ss );
+      analyze_statement( *body, ss, tbl);
    }
    if( s.else_body != nullptr ) {
-      analyze_statement( *s.else_body, ss );
+      analyze_statement( *s.else_body, ss, tbl);
    }
 }
 
-void analyze_statement( const var_statement& s, scope_stack& ss ) {
-   if( !ss.top( ).try_declare( *s.name ) ) {
+void analyze_statement( const var_statement& s, scope_stack& ss, resolution_table& tbl ) {
+   if( !ss.top( ).try_declare(*s.name) ) {
       throw std::vector<std::pair<token, std::string>>( {
-         { *s.name,                            "Variable redeclaration." },
-         { *ss.top( ).find_variable( *s.name ), "Previously declared." }
+         { *s.name,                                  "Variable redeclaration." },
+         { *ss.top( ).find_variable(s.name->source), "Previously declared." }
       } );
    }
    if( s.value != nullptr ) {
-      analyze_expression( *s.value, ss );
+      analyze_expression( *s.value, ss, tbl);
    }
 }
 
-void analyze_statement( const return_statement& s, scope_stack& ss ) {
+void analyze_statement( const return_statement& s, scope_stack& ss, resolution_table& tbl ) {
    if( s.return_value != nullptr ) {
-      analyze_expression( *s.return_value, ss );
+      analyze_expression( *s.return_value, ss, tbl);
    }
 }
 
-void analyze_statement( const statement& s, scope_stack& ss ) {      // sí, if else if !
+void analyze_statement( const statement& s, scope_stack& ss, resolution_table& tbl ) {      // sí, if else if !
    if( typeid( s ) == typeid( sequence_statement ) ) {
-      return analyze_statement( dynamic_cast<const sequence_statement&>( s ),   ss );
+      return analyze_statement( dynamic_cast<const sequence_statement&>( s ),   ss, tbl);
    } else if( typeid( s ) == typeid( expression_statement ) ) {
-      return analyze_statement( dynamic_cast<const expression_statement&>( s ), ss );
+      return analyze_statement( dynamic_cast<const expression_statement&>( s ), ss, tbl);
    } else if( typeid( s ) == typeid( if_statement ) ) {
-      return analyze_statement( dynamic_cast<const if_statement&>( s ),         ss );
+      return analyze_statement( dynamic_cast<const if_statement&>( s ),         ss, tbl);
    } else if( typeid( s ) == typeid( var_statement ) ) {
-      return analyze_statement( dynamic_cast<const var_statement&>( s ),        ss );
+      return analyze_statement( dynamic_cast<const var_statement&>( s ),        ss, tbl);
    } else if( typeid( s ) == typeid( return_statement ) ) {
-      return analyze_statement( dynamic_cast<const return_statement&>( s ),     ss );
+      return analyze_statement( dynamic_cast<const return_statement&>( s ),     ss, tbl);
    }
 }
 
-void analyze_function( const function_declaration& f, scope_stack& ss ) {
+void analyze_function( const function_declaration& f, scope_stack& ss, resolution_table& tbl ) {
    ss.push( );
    for( const auto& var : f.parameters ) {
-      ss.top( ).try_declare( *var );
+      ss.top( ).try_declare(*var);
    }
-   analyze_statement( *f.body, ss );
+   analyze_statement( *f.body, ss, tbl);
    ss.pop( );
 }
 

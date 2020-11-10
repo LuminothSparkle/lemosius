@@ -104,10 +104,10 @@ struct symbol { //Solo contiene datos con funciones auxiliares
    auto get_overload_sets( ) const {
       return std::get_if<1>( &data );
    }
-   std::pair<const visible_function*, bool> get_overload( std::size_t arity ) const {
+   std::pair<const function_declaration*, bool> get_overload( std::size_t arity ) const {
       if( auto user_ptr = get_user_overload_set( ); user_ptr != nullptr ) {
          if( auto iter = user_ptr->find( arity ); iter != user_ptr->end( ) ) {
-            return { &iter->second, true };
+            return { iter->second.declaration, true };
          }
       }
       if( auto builtin_ptr = get_builtin_overload_set( ); builtin_ptr != nullptr ) {
@@ -121,14 +121,13 @@ struct symbol { //Solo contiene datos con funciones auxiliares
 
 struct scope { //Solo contiene datos con funciones auxiliares
    std::unordered_map<std::string_view, const token*> variables; //Tabla de variables
-   bool try_declare( const token& tok ) {
-      return variables.emplace( std::string_view( tok ), &tok ).second;
+   bool try_declare(const token& t) {
+      return variables.emplace(t.source, &t).second;
    }
-   const token* find_variable( const token& tok ) const {
-      auto iter = variables.find( std::string_view( tok ) );
+   const token* find_variable(std::string_view s) const {
+      auto iter = variables.find(s);
       return iter != variables.end( ) ? iter->second : nullptr;
    }
-
 };
 
 class scope_stack {
@@ -151,27 +150,34 @@ class scope_stack {
       return scope_list.back( );
    }
 
-   symbol find_symbol( const token& tok ) const {     //Devuelve un tipo diferente segun sea el caso
+   symbol find_symbol(std::string_view s) const {     //Devuelve un tipo diferente segun sea el caso
       // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
       // 1) no existe el símbolo (regresamos nullptr)
       // 2) sí existe el símbolo y sí es variable
       // 3) sí existe el símbolo pero es una función
       for( auto iter = scope_list.rbegin(); iter != scope_list.rend( ); ++iter ) {
-         if( auto tok_ptr = iter->find_variable( tok ); tok_ptr != nullptr ) {
-            return { tok_ptr };
+         if( auto tk = iter->find_variable(s); tk != nullptr ) {
+            return { tk };
          }
       }
+
       const function_overload_set* user_overloads    = nullptr;
       const builtin_overload_set*  builtin_overloads = nullptr;
-      std::string_view symbol( tok );
-      if( auto iter = resources.function_overloads.find( symbol ); iter != resources.function_overloads.end( ) ) {
+      if( auto iter = resources.function_overloads.find(s); iter != resources.function_overloads.end( ) ) {
          user_overloads = &iter->second;
       }
-      if( auto iter = resources.builtin_overloads.find( symbol ); iter != resources.builtin_overloads.end( ) ) {
+      if( auto iter = resources.builtin_overloads.find(s); iter != resources.builtin_overloads.end( ) ) {
          builtin_overloads = &iter->second;
       }
       return { std::make_pair( user_overloads, builtin_overloads ) };
    }
+};
+
+struct resolution_table {
+   const std::unordered_map<std::string_view, operator_overload_set>& operator_overloads;
+   std::unordered_map<std::string_view, std::map<token_type, const function_declaration*>> operator_lookup;
+   std::unordered_map<const token*, const token*> variable_lookup;
+   std::unordered_map<const token*, const function_declaration*> function_lookup;
 };
 
 #endif //SEMANTIC_TYPES_H
