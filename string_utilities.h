@@ -15,7 +15,7 @@ std::string transform_join( InputIterator first, InputIterator last, const Trans
 
 template<typename InputContainer, typename Transform>
 std::string transform_join( const InputContainer& C, const Transform& T, const char* sep = "", const char* prefix = "", const char* suffix = "" ) {
-   return transform_join( C.begin(), C.end(), T, sep, prefix, suffix );
+   return transform_join( C.begin( ), C.end( ), T, sep, prefix, suffix );
 }
 
 template<typename InputIterator>
@@ -27,12 +27,12 @@ std::string join( InputIterator first, InputIterator last, const char* sep = "",
 
 template<typename InputContainer>
 std::string join( const InputContainer& C, const char* sep = "", const char* prefix = "", const char* suffix = "" ) {
-   return join( C.begin(), C.end(), sep, prefix, suffix );
+   return join( C.begin( ), C.end( ), sep, prefix, suffix );
 }
 
 template<typename T> requires( !std::is_pointer_v<T> )
 std::string to_string( const T& t, const std::string& prefix = "", const std::string& suffix = "" ) {
-   return prefix + t.str() + suffix;
+   return prefix + t.str( ) + suffix;
 }
 
 template<typename T>
@@ -42,7 +42,7 @@ std::string to_string( const T* t, const std::string& prefix = "", const std::st
 
 template<typename T>
 std::string to_string( const std::unique_ptr<T>& p, const std::string& prefix = "", const std::string& suffix = "" ) {
-   return to_string( p.get(), prefix, suffix );
+   return to_string( p.get( ), prefix, suffix );
 }
 
 #endif // STRING_UTILITIES_H

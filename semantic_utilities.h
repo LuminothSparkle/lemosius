@@ -10,8 +10,8 @@
 #include <utility>
 #include <charconv>
 
-template<typename T>
-bool is_public( const T& t ) {
+template<typename HasAccessType>
+bool is_public( const HasAccessType& t ) {
    return t.access == nullptr || *t.access == PUBLIC_K;
 };
 
@@ -19,19 +19,19 @@ bool isoctal( char c ) {
    return isdigit( c ) && c < '8';
 }
 
-template<typename T>
-std::pair<T, bool> get_representation( const std::string_view& s ) {
+template<typename NumType>
+std::pair<NumType, bool> get_representation( const std::string_view& s ) {
    //      :( GCC aún no tiene from_chars para floating point
    //long double res;
    //auto [end, error] = std::from_chars(s.data( ), s.data( ) + s.size( ), res);
    //return { T(res), (!error && p == s.end( ) && T(res) == res) }; */
-   char* p;
+   char* cptr;
    std::string buffer( s );
-   long double res = std::strtold( buffer.c_str(), &p );
-   if( p != buffer.c_str() + buffer.size() ) {
-      return { T( ), false };
+   long double res = std::strtold( buffer.c_str( ), &cptr );
+   if( cptr != buffer.end( ).base( ) ) {
+      return { NumType( ), false };
    }
-   return { T( res ), T( res ) == res };
+   return { NumType( res ), NumType( res ) == res };
    //try {      // horrible, pero más fácil de escribir que el que usa std::strold, en particular porque strold requiere una cadena con terminador
    //   long double res = std::stold(std::string(s));      // nosotros sabemos que nuestros string_views vienen de tokens válidos y que acaban en algo que ya no es número,
    //   return { T(res), T(res) == res };                  // pero prefiero no andarle jugando al vivo
@@ -40,22 +40,22 @@ std::pair<T, bool> get_representation( const std::string_view& s ) {
    //}
 }
 
-template<typename T>
-T get_representation( const token& t, const std::string& error_mes = "" ) {
-   auto [val, success] = get_representation<T>( t.source );
+template<typename NumType>
+NumType get_representation( const token& tok, const std::string& err_mes = "" ) {
+   auto [val, success] = get_representation<NumType>( std::string_view( tok ) );
    if( !success ) {
-      throw std::pair<token, std::string>( t, error_mes );
+      throw std::pair<token, std::string>( tok, err_mes );
    }
    return val;
 }
 
-std::pair<std::string, std::string_view::iterator> unquoted_str( const std::string_view& sv ) {
-   auto it = sv.begin();
-   if( sv.empty() || sv.front() != '"' ) { //Mejor para no tener problemas, ya que igual se checa en el lexer pero tambien aqui por si las dudas.
-      return { "", sv.begin() };
+std::pair<std::string, const char*> unquoted_str( const std::string_view& sv ) {
+   auto it = sv.begin( );
+   if( sv.empty( ) || sv.front( ) != '"' ) { //Mejor para no tener problemas, ya que igual se checa en el lexer pero tambien aqui por si las dudas.
+      return { "", sv.begin( ) };
    }
    std::string res;
-   for( std::advance( it, 1 ); it != sv.end() && *it != '"'; std::advance( it, 1 ) ) {
+   for( std::advance( it, 1 ); it != sv.end( ) && *it != '"'; std::advance( it, 1 ) ) {
       if( *it == '\\' ) {
          std::advance( it, 1 );
          constexpr std::string_view escaped = R"(abtnvfre0"'\)";
@@ -69,7 +69,7 @@ std::pair<std::string, std::string_view::iterator> unquoted_str( const std::stri
             auto obtain_char = [&base, &sv]( auto & it, unsigned char& c ) {
                unsigned char val = 0;
                auto first = it;
-               it = std::from_chars( first, sv.end(), val, base ).ptr;
+               it = std::from_chars( first, sv.end( ), val, base ).ptr;
                return first != it;
             };
             unsigned char c;
@@ -90,10 +90,10 @@ std::pair<std::string, std::string_view::iterator> unquoted_str( const std::stri
    return { res, std::next( it, *it == '"' ) };
 }
 
-std::string unquoted_str( const token& t, const std::string& error_mes = "" ) {
-   auto [str, it] = unquoted_str( t.source );
-   if( it != t.end() ) {
-      throw std::pair<token, std::string>( { t.type, { it, t.end() } }, error_mes );
+std::string unquoted_str( const token& tok, const std::string& err_mes = "" ) {
+   auto [str, cptr] = unquoted_str( std::string_view( tok ) );
+   if( cptr != tok.end( ) ) {
+      throw std::pair<token, std::string>( { token_type{tok}, { cptr, tok.size( ) } }, err_mes );
    }
    return str;
 }

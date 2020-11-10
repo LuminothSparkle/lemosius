@@ -54,7 +54,7 @@ struct token {
    token_type type;          // Indica el tipo de token
    std::string_view source;  // Indica la cadena del token en la fuente original
 
-   std::string str() const {
+   std::string str( ) const {
       return std::string( source );
    }
 
@@ -78,11 +78,15 @@ struct token {
       return source.front( );
    }
 
-   operator token_type() const {
+   auto size( ) const  {
+      return source.size( );
+   }
+
+   operator token_type( ) const {
       return type;
    }
 
-   operator std::string_view() const {
+   operator std::string_view( ) const {
       return source;
    }
 
@@ -94,13 +98,12 @@ class lexer {
    RE2 generate_expresion( ) const {
       std::vector<std::string> other_tokens = {         // Tokens reconocidos como validos pero que no generan token para el parser
          R"(\s+)",                                      // Espacios y saltos de linea
-                                                         // R"((?:[^\#](?s:.*)[^\#]|[^\#]?))"
-         RE2::QuoteMeta( R"(###<)" ) + R"((?s:|.+))" + RE2::QuoteMeta( R"(>###)" ), // Comentarios multilinea
-         RE2::QuoteMeta( R"(##<)" ) + R"([^\n]*(?:\n|$))",           // Comentarios de una linea
+         RE2::QuoteMeta( R"(###<)" ) + R"((?s:.*?))"       + RE2::QuoteMeta( R"(>###)" ), // Comentarios multilinea prev R"((?:[^\#](?s:.*)[^\#]|[^\#]?))"
+         RE2::QuoteMeta( R"(##<)" )  + R"([^\n]*(?:\n|$))",           // Comentarios de una linea
       };
-      std::vector<std::string> parts( token_forms.size( ) + 1 );
-      parts[0] = join( other_tokens, "|" );
-      std::transform( token_forms.begin( ), token_forms.end( ), parts.begin( ) + 1,
+      std::vector<std::string> parts;
+      parts.push_back( join( other_tokens, "|" ) );
+      std::transform( token_forms.begin( ), token_forms.end( ), std::back_inserter( parts ),
       [&]( const std::vector<std::string>& t ) {
          return join( t, "|", "(", ")" );
       } );
@@ -108,10 +111,10 @@ class lexer {
    }
 
  public:
-   std::vector<token> tokenization( const char*& ini, token_type stop, std::string error_mes = "" ) const  {
+   std::vector<token> tokenization( const char*& cptr, token_type stop, std::string error_mes = "" ) const  {
       // Genera expresion e inicializa la entrada del mismo
       RE2 e = generate_expresion( );
-      re2::StringPiece input( ini );
+      re2::StringPiece input( cptr );
       // Se generan los argumentos para la expresion regular, que son el arreglo de cadenas que son atrapadas, cada una identificada por el token_type
       std::array< re2::StringPiece, END_OF_INPUT > mt;
       std::array< RE2::Arg,         END_OF_INPUT > args;
@@ -119,7 +122,7 @@ class lexer {
       std::transform( mt.begin( ),   mt.end( ),   args.begin( ), []( re2::StringPiece & s ) {
          return &s;
       } );
-      std::transform( args.begin( ), args.end( ), m.begin( ),    []( RE2::Arg & a )        {
+      std::transform( args.begin( ), args.end( ), m.begin( ),    []( RE2::Arg & a )         {
          return &a;
       } );
       // Inicia el analisis lexico
@@ -142,11 +145,9 @@ class lexer {
          }
       }
       // Mueve la entrada hasta donde reconociste
-      if( stop != END_OF_INPUT ) {
-         ini = input.data( ) - mt[stop].size( );
-      }
+      cptr = input.data( ) - ( stop != END_OF_INPUT ? mt[stop].size( ) : 0 );
       // Inserta un token de END_OF_INPUT reemplazando siempre el token de parada
-      tokens.push_back( { END_OF_INPUT, {ini, 0} } );
+      tokens.push_back( { END_OF_INPUT, { cptr, 0 } } );
       return tokens;
    }
 
@@ -155,7 +156,7 @@ class lexer {
       for( const auto& op : ops ) {
          token_forms[OPERATOR_L].push_back( RE2::QuoteMeta( op ) );
       }
-      std::sort( token_forms[OPERATOR_L].begin(), token_forms[OPERATOR_L].end(), []( const auto & s1, const auto & s2 ) {
+      std::sort( token_forms[OPERATOR_L].begin( ), token_forms[OPERATOR_L].end( ), []( const auto & s1, const auto & s2 ) {
          return s1.size( ) > s2.size( );       // sí, hay que cuidar lo del maximum munch
       } );
    }
@@ -190,12 +191,13 @@ class lexer {
    }
 };
 
-const char* popback_tokens( std::vector<token>& tokens, token_type type ) {
+template<typename Pred>
+const char* unget_tokens_until( std::vector<token>& tokens, const Pred& P ) {
    const char* last;
-   while( tokens.back() != type ) {
-      last = tokens.back().source.data();
-      tokens.pop_back();
-   }
+   do {
+      last = tokens.back( ).data( );
+      tokens.pop_back( );
+   } while( !P( tokens.back( ) ) );
    tokens.push_back( { END_OF_INPUT, { last, 0 } } );
    return last;
 }

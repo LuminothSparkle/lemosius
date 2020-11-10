@@ -2,94 +2,84 @@
 #define PARSER_STATEMENT_H
 
 #include "parser_types.h"
-
 #include "parser_utilities.h"
 #include "parser_expression.h"
 
 #include <memory>
 
-std::unique_ptr<statement> parse_statement( const token*& t, const operator_map& opm );
+std::unique_ptr<statement> parse_statement( const token*&, const operator_map& );
 
-auto parse_sequence_statement( const token*& t, const operator_map& opm ) {
-   auto seq_stmt = std::make_unique<sequence_statement>();
-
-   match( t, LBRACE_P, "Expecting {" );
-   while( *t != RBRACE_P )
-      seq_stmt->body.push_back( parse_statement( t, opm ) );
-   match( t, RBRACE_P, "Expecting }" );
-
+auto parse_sequence_statement( const token*& tok_ptr, const operator_map& opm ) {
+   auto seq_stmt = std::make_unique<sequence_statement>( );
+   match( tok_ptr, LBRACE_P, "Expecting {" );
+   while( *tok_ptr != RBRACE_P ) {
+      seq_stmt->body.push_back( parse_statement( tok_ptr, opm ) );
+   }
+   match( tok_ptr, RBRACE_P, "Expecting }" );
    return seq_stmt;
 }
 
-auto parse_if_statement( const token*& t, const operator_map& opm ) {
-   auto if_stmt = std::make_unique<if_statement>();
-
-   match( t, IF_K, "Expecting if" );
-   match( t, LPARENTHESIS_P, "Expecting (" );
-   if_stmt->conditions.push_back( parse_expression( t, opm ) );
-   match( t, RPARENTHESIS_P, "Expecting )" );
-   if_stmt->bodys.push_back( parse_sequence_statement( t, opm ) );
-   while( *t == ELSE_K && *( t + 1 ) == IF_K ) {
-      match( t, ELSE_K, "Expecting else" );
-      match( t, IF_K, "Expecting if" );
-      match( t, LPARENTHESIS_P, "Expecting (" );
-      if_stmt->conditions.push_back( parse_expression( t, opm ) );
-      match( t, RPARENTHESIS_P, "Expecting )" );
-      if_stmt->bodys.push_back( parse_sequence_statement( t, opm ) );
+auto parse_if_statement( const token*& tok_ptr, const operator_map& opm ) {
+   auto if_stmt = std::make_unique<if_statement>( );
+   match( tok_ptr, IF_K, "Expecting if" );
+   match( tok_ptr, LPARENTHESIS_P, "Expecting (" );
+   if_stmt->conditions.push_back( parse_expression( tok_ptr, opm ) );
+   match( tok_ptr, RPARENTHESIS_P, "Expecting )" );
+   if_stmt->bodys.push_back( parse_sequence_statement( tok_ptr, opm ) );
+   while( *tok_ptr == ELSE_K && *( tok_ptr + 1 ) == IF_K ) {
+      match( tok_ptr, ELSE_K, "Expecting else" );
+      match( tok_ptr, IF_K, "Expecting if" );
+      match( tok_ptr, LPARENTHESIS_P, "Expecting (" );
+      if_stmt->conditions.push_back( parse_expression( tok_ptr, opm ) );
+      match( tok_ptr, RPARENTHESIS_P, "Expecting )" );
+      if_stmt->bodys.push_back( parse_sequence_statement( tok_ptr, opm ) );
    }
-   if( optional_match( t, ELSE_K ) != nullptr ) {
-      if_stmt->else_body = parse_sequence_statement( t, opm );
+   if( optional_match( tok_ptr, ELSE_K ) != nullptr ) {
+      if_stmt->else_body = parse_sequence_statement( tok_ptr, opm );
    }
-
    return if_stmt;
 }
 
-auto parse_var_statement( const token*& t, const operator_map& opm ) {
-   auto var_decl = std::make_unique<var_statement>();
-
-   match( t, VAR_K, "Expecting var" );
-   var_decl->name = match( t, IDENTIFIER_L, "Expecting an identifier" );
-   if( optional_match( t, ASSIGNMENT_O ) != nullptr ) {
-      var_decl->value = parse_expression( t, opm );
+auto parse_var_statement( const token*& tok_ptr, const operator_map& opm ) {
+   auto var_stmt = std::make_unique<var_statement>( );
+   match( tok_ptr, VAR_K, "Expecting var" );
+   var_stmt->name = match( tok_ptr, IDENTIFIER_L, "Expecting an identifier" );
+   if( optional_match( tok_ptr, ASSIGNMENT_O ) != nullptr ) {
+      var_stmt->value = parse_expression( tok_ptr, opm );
    }
-   match( t, SEMICOLON_P, "Expecting ;" );
-
-   return var_decl;
+   match( tok_ptr, SEMICOLON_P, "Expecting ;" );
+   return var_stmt;
 }
 
-auto parse_return_statement( const token*& t, const operator_map& opm ) {
-   auto ret_stmt = std::make_unique<return_statement>();
-
-   match( t, RETURN_K, "Expecting return" );
-   ret_stmt->return_value = parse_expression( t, opm );
-   match( t, SEMICOLON_P, "Expecting ;" );
-
+auto parse_return_statement( const token*& tok_ptr, const operator_map& opm ) {
+   auto ret_stmt = std::make_unique<return_statement>( );
+   match( tok_ptr, RETURN_K, "Expecting return" );
+   ret_stmt->return_value = parse_expression( tok_ptr, opm );
+   match( tok_ptr, SEMICOLON_P, "Expecting ;" );
    return ret_stmt;
 }
 
-auto parse_expression_statement( const token*& t, const operator_map& opm ) {
-   auto exp_stmt = std::make_unique<expression_statement>();
-
-   if( *t != SEMICOLON_P ) {
-      exp_stmt->body = parse_expression( t, opm );
+auto parse_expression_statement( const token*& tok_ptr, const operator_map& opm ) {
+   auto exp_stmt = std::make_unique<expression_statement>( );
+   if( *tok_ptr != SEMICOLON_P ) {
+      exp_stmt->body = parse_expression( tok_ptr, opm );
    }
-   match( t, SEMICOLON_P, "Expecting ;" );
-
+   match( tok_ptr, SEMICOLON_P, "Expecting ;" );
    return exp_stmt;
 }
 
-std::unique_ptr<statement> parse_statement( const token*& t, const operator_map& opm ) {
-   switch( *t ) {
+std::unique_ptr<statement> parse_statement( const token*& tok_ptr, const operator_map& opm ) {
+   switch( *tok_ptr ) {
    case LBRACE_P:
-      return parse_sequence_statement( t, opm );
+      return parse_sequence_statement( tok_ptr, opm );
    case IF_K:
-      return parse_if_statement( t, opm );
+      return parse_if_statement( tok_ptr, opm );
    case VAR_K:
-      return parse_var_statement( t, opm );
+      return parse_var_statement( tok_ptr, opm );
    case RETURN_K:
-      return parse_return_statement( t, opm );
+      return parse_return_statement( tok_ptr, opm );
    default:
-      return parse_expression_statement( t, opm );
+      return parse_expression_statement( tok_ptr, opm );
    }
 }
 
