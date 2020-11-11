@@ -4,53 +4,57 @@ private operator +  infix (left 9) as pub4_plus;
 private operator -  infix (left 9) as pub4_minus;
 private operator -  prefix         as pub4_minus;
 private operator #  suffix         as pub4_hashtag;
+
 public  operator && suffix         as pub4_hashtag;
-private operator || suffix         as pub4_hashtag;
+##<public  operator !! suffix         as priv4_hashtag; ##<Definicion privada
+private operator '' suffix         as pub4_hashtag;
+private operator || suffix         as priv4_hashtag;
 
-public proc pub4_mult(a,b) {
-    return a * b;
+
+public proc pub4_mult(var a,var b) {
+    return priv4_mult(a,b);
 }
 
-public proc pub4_div(a,b) {
-    return a / b;
+public proc pub4_div(var a,var b) {
+    return priv4_div(a,b);
 }
 
-public proc pub4_plus(a,b) {
-    return a + b;
+public proc pub4_plus(var a,var b) {
+    return priv4_plus(a,b);
 }
 
-public proc pub4_minus(a,b) {
-    return a - b;
+public proc pub4_minus(var a,var b) {
+    return priv4_minus(a,b);
 }
 
-public proc pub4_minus(a) {
-    return -a;
+public proc pub4_minus(var a) {
+    return priv4_minus(a);
 }
 
-public proc pub4_hashtag(a) {
-    return a#;
+public proc pub4_hashtag(var a) {
+    return priv4_hashtag(a);
 }
 
-private proc priv4_mult(a,b) {
-    return a;
+private proc priv4_mult(var a,var b) {
+    return product(a,b);
 }
 
-private proc priv4_div(a,b) {
-    return a;
+private proc priv4_div(var a,var b) {
+    return division(a,b);
 }
 
-private proc priv4_plus(a,b) {
-    return a;
+private proc priv4_plus(var a,var b) {
+    return addition(a,b);
 }
 
-private proc priv4_minus(a,b) {
-    return a;
+private proc priv4_minus(var a,var b) {
+    return subtraction(a,b);
 }
 
-private proc priv4_minus(a) {
-    return a;
+private proc priv4_minus(var a) {
+    return minus(a);
 }
 
-private proc priv4_hashtag(a) {
-    return a;
+private proc priv4_hashtag(var a) {
+    return print(a);
 }

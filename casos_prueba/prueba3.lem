@@ -1,56 +1,59 @@
-private operator *  infix (left 9) as pub3_mult;
-private operator /  infix (left 9) as pub3_div;
-private operator +  infix (left 9) as pub3_plus;
-private operator -  infix (left 9) as pub3_minus;
-private operator -  prefix         as pub3_minus;
-private operator #  suffix         as pub3_hashtag;
+private operator *  infix (left 9) as priv3_mult;
+private operator /  infix (left 9) as priv3_div;
+private operator +  infix (left 9) as priv3_plus;
+private operator -  infix (left 9) as priv3_minus;
+private operator -  prefix         as priv3_minus;
+private operator #  suffix         as priv3_hashtag;
+
 public  operator \\ suffix         as pub3_hashtag;
+##<public  operator .. suffix         as priv3_hashtag; ##<Definicion privada
 private operator :: suffix         as pub3_hashtag;
+private operator ?? suffix         as priv3_hashtag;
 
-public proc pub3_mult(a,b) {
-    return a * b;
+public proc pub3_mult(var a,var b) {
+    return priv3_mult(a,b);
 }
 
-public proc pub3_div(a,b) {
-    return a / b;
+public proc pub3_div(var a,var b) {
+    return priv3_div(a,b);
 }
 
-public proc pub3_plus(a,b) {
-    return a + b;
+public proc pub3_plus(var a,var b) {
+    return priv3_plus(a,b);
 }
 
-public proc pub3_minus(a,b) {
-    return a - b;
+public proc pub3_minus(var a,var b) {
+    return priv3_minus(a,b);
 }
 
-public proc pub3_minus(a) {
-    return -a;
+public proc pub3_minus(var a) {
+    return priv3_minus(a);
 }
 
-public proc pub3_hashtag(a) {
-    return a#;
+public proc pub3_hashtag(var a) {
+    return priv3_hashtag(a);
 }
 
-private proc priv3_mult(a,b) {
-    return a;
+private proc priv3_mult(var a,var b) {
+    return product(a,b);
 }
 
-private proc priv3_div(a,b) {
-    return a;
+private proc priv3_div(var a,var b) {
+    return division(a,b);
 }
 
-private proc priv3_plus(a,b) {
-    return a;
+private proc priv3_plus(var a,var b) {
+    return addition(a,b);
 }
 
-private proc priv3_minus(a,b) {
-    return a;
+private proc priv3_minus(var a,var b) {
+    return subtraction(a,b);
 }
 
-private proc priv3_minus(a) {
-    return a;
+private proc priv3_minus(var a) {
+    return minus(a);
 }
 
-private proc priv3_hashtag(a) {
-    return a;
+private proc priv3_hashtag(var a) {
+    return print(a);
 }
