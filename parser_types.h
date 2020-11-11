@@ -96,7 +96,7 @@ struct if_statement : statement {
 
    std::string str( ) const {
       std::string res;
-      for( std::size_t idx = 0; idx < conditions.size(); ++idx ) {
+      for( std::size_t idx = 0; idx < conditions.size( ); ++idx ) {
          res.append( ( idx > 0 ? "else " : "" ) + to_string( conditions[idx], "if(", ")" ) + to_string( bodys[idx], " ", "\n" ) );
       }
       res.append( to_string( else_body, "else ", "\n" ) );
@@ -151,10 +151,10 @@ struct operator_declaration {
 };
 
 struct function_declaration {
-   const token*                        access     = nullptr;
-   const token*                        name;
-   std::vector<const token*>           parameters;
-   std::unique_ptr<sequence_statement> body;
+   const token*                                access     = nullptr;
+   const token*                                name;
+   std::vector<std::unique_ptr<var_statement>> parameters;
+   std::unique_ptr<sequence_statement>         body;
 
    std::string str( ) const {
       return to_string( access, "", " " ) + to_string( name, "proc " ) + transform_join( parameters, []( const auto & s ) {
