@@ -105,7 +105,7 @@ struct if_statement : statement {
 };
 
 struct var_statement : statement {
-   const token*                      name;
+   const token*                name;
    std::unique_ptr<expression> value = nullptr;
 
    std::string str( ) const {
