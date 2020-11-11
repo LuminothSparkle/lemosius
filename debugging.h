@@ -50,7 +50,7 @@ std::ostream& operator <<( std::ostream& os, const token& tok ) {
 }
 
 std::ostream& operator <<( std::ostream& os, token* tok ) {
-   return ( t == nullptr ? os << "[null_token]" : os << *tok );
+   return ( tok == nullptr ? os << "[null_token]" : os << *tok );
 }
 
 template<typename T>

@@ -132,11 +132,11 @@ try {
    }
    map_path_source compiled;
    std::filesystem::path include_path( std::filesystem::absolute( argv[0] ) );
-   include_path = include_path.parent_path() / "include";
+   include_path = include_path.parent_path( ) / "include";
    std::filesystem::path file_path( argv[1] );
    std::ostringstream oss;
    compile( file_path,  include_path, compiled, oss );
-   std::ofstream ofs( file_path.replace_extension( ".cpp" ).c_str() );
+   std::ofstream ofs( file_path.replace_extension( ".cpp" ).c_str( ) );
    ofs << std::move( oss ).str( );
    //std::cout << compile( argv[1], compiled, std::cout ).value( );
 } catch( std::stack<compiler_error>& sce ) {
