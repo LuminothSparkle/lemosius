@@ -11,7 +11,7 @@ void analyze_expression( const expression&, scope_stack&, resolution_table& );
 void analyze_expression( const terminal_expression& e, scope_stack& ss, resolution_table& tbl ) {
    if( *e.tok_ptr == IDENTIFIER_L ) {
       if( auto var_decl = ss.find_symbol( *e.tok_ptr ).get_variable( ); var_decl != nullptr ) {
-         tbl.variable_lookup.emplace( e.tok_ptr, var_decl );
+         tbl.variable_lookup.emplace( &e, var_decl );
       } else {
          throw std::pair<token, std::string>( *e.tok_ptr, "Variable not declared." );
       }
@@ -40,7 +40,7 @@ void analyze_expression( const call_expression& e, scope_stack& ss, resolution_t
       } );
    }
    if( auto [func_decl, exists] = sym.get_overload( e.params.size( ) ); exists ) {
-      tbl.function_lookup.emplace( e.function_name, func_decl );
+      tbl.function_lookup.emplace( &e, func_decl );
    } else {
       const auto& [user_ptr, builtin_ptr] = *sym.get_overload_sets( );
       if( user_ptr == nullptr && builtin_ptr == nullptr ) {
@@ -129,6 +129,9 @@ void analyze_statement( const statement& s, scope_stack& ss, resolution_table& t
 }
 
 void analyze_function( const function_declaration& f, scope_stack& ss, resolution_table& tbl ) {
+   if( typeid( *f.body->body.back( ) ) != typeid( return_statement ) ) {
+      f.body->body.emplace_back( std::make_unique<return_statement>( ) );
+   }
    ss.push( );
    for( const auto& var : f.parameters ) {
       ss.top( ).try_declare( *var );

@@ -68,7 +68,7 @@ auto generate_usables_functions( const std::vector<inclusion>& incs, const std::
    return overloads;
 }
 
-resolution_table analyze_program( const program_resources& pr ) {
+resolution_table analyze_program( const program_resources& pr, bool is_main ) {
    resolution_table tbl{pr.operator_overloads};
    scope_stack global( pr );
    for( const auto& [sv, overload] : pr.operator_overloads ) {
@@ -84,6 +84,9 @@ resolution_table analyze_program( const program_resources& pr ) {
    }
    for( const auto& f : pr.tree.functions ) {
       analyze_function( f, global, tbl );
+   }
+   if( is_main && ( !pr.function_overloads.contains( "main" ) || !pr.function_overloads.at( "main" ).contains( 0 ) ) ) {
+      throw std::pair<token, std::string>( *std::prev( pr.program_tokens.end( ), 2 ), "main( ) is not defined or is not visible." );
    }
    return tbl;
 }

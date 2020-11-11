@@ -66,7 +66,7 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
    std::string what;
 };
 
-std::optional<program_resources> compile( std::filesystem::path path, const std::filesystem::path& include_path, map_path_source& compiled, std::ostream& os )
+std::optional<program_resources> compile_file( std::filesystem::path path, map_path_source& compiled, bool is_main, std::ostream& os )
 try {
    if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
       return {};
@@ -90,7 +90,7 @@ try {
       for( const auto& inc : pr.tree.header.includes ) {
          auto unquoted_file_name = unquoted_str( *inc.file_name );
          try {
-            auto res = compile( unquoted_file_name, include_path, compiled, os );
+            auto res = compile_file( unquoted_file_name, compiled, false, os );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
@@ -110,8 +110,9 @@ try {
       pr.tree.functions     = parse_program( tok_ptr, pr.get_operator_decls( ) );
       pr.function_overloads = generate_usables_functions( pr.inclusions, pr.tree.functions );
       // Semantico 2
-      resolution_table tbl  = analyze_program( pr );
-      write_program( pr, tbl, include_path, os );
+      resolution_table tbl  = analyze_program( pr, is_main );
+      // Generador de codigo
+      write_program( pr, tbl, is_main, os );
       return pr;
    } catch( const std::vector<std::pair<token, std::string>>& err ) {
       throw std::stack<compiler_error>( { compiler_error( compiled, err ) } );
@@ -124,21 +125,31 @@ try {
    throw std::stack<compiler_error>( { compiler_error( path, { err, "Cannot open or read file" } ) } );
 }
 
+void include_builtins( const std::filesystem::path& include_path, std::ostream& os ) {
+   for( const auto& path : std::filesystem::directory_iterator( include_path ) ) {
+      auto buffer = read_file( path );
+      std::remove( buffer.begin( ), buffer.end( ), '\r' );
+      os << buffer.data( ) << "\n";
+   }
+}
+
 int main( int argc, char *argv[] )
 try {
    if( argc != 2 ) {
       std::cout << "Usage:" << argv[0] << " <path_file_name>\n";
       return 0;
    }
+   std::filesystem::path include_path  = std::filesystem::absolute( argv[0] ).parent_path( ) / "include";
+   std::filesystem::path source_path   = std::filesystem::absolute( argv[1] );
+   std::filesystem::path compiled_path = std::filesystem::absolute( argv[1] ).replace_extension( ".cpp" );
+   //Recopilar el codigo en oss.
    map_path_source compiled;
-   std::filesystem::path include_path( std::filesystem::absolute( argv[0] ) );
-   include_path = include_path.parent_path( ) / "include";
-   std::filesystem::path file_path( argv[1] );
    std::ostringstream oss;
-   compile( file_path,  include_path, compiled, oss );
-   std::ofstream ofs( file_path.replace_extension( ".cpp" ).c_str( ) );
+   include_builtins( include_path, oss );
+   compile_file( source_path, compiled, true, oss );
+   //Imprimir el codigo fuente en el destino.
+   std::ofstream ofs( compiled_path.c_str( ) );
    ofs << std::move( oss ).str( );
-   //std::cout << compile( argv[1], compiled, std::cout ).value( );
 } catch( std::stack<compiler_error>& sce ) {
    while( !sce.empty( ) ) {
       std::cout << sce.top( ).what << "\n";

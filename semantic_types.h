@@ -176,10 +176,10 @@ class scope_stack {
 };
 
 struct resolution_table {
-   const std::unordered_map<std::string_view, operator_overload_set>& operator_overloads;
+   const std::unordered_map<std::string_view, operator_overload_set>&                      operator_overloads;
    std::unordered_map<std::string_view, std::map<token_type, const function_declaration*>> operator_lookup;
-   std::unordered_map<const token*, const var_statement*> variable_lookup;
-   std::unordered_map<const token*, const function_declaration*> function_lookup;
+   std::unordered_map<const terminal_expression*, const var_statement*>                    variable_lookup;
+   std::unordered_map<const call_expression*, const function_declaration*>                 function_lookup;
 };
 
 #endif //SEMANTIC_TYPES_H

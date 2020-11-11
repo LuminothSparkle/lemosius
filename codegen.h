@@ -2,13 +2,11 @@
 #define CODEGEN_H
 
 #include "semantic_types.h"
-#include "builtin_codegen.h"
 
 #include <ostream>
 #include <sstream>
 #include <string_view>
 #include <string>
-#include <filesystem>
 
 template<typename T>
 std::string get_identifier_name( const T& t ) {
@@ -34,7 +32,7 @@ void write_expression( const expression&, const resolution_table&, std::ostream&
 
 void write_expression( const terminal_expression& e, const resolution_table& tbl, std::ostream& os ) {
    if( *e.tok_ptr == IDENTIFIER_L ) {
-      os << get_identifier_name( *tbl.variable_lookup.at( e.tok_ptr ) );
+      os << get_identifier_name( *tbl.variable_lookup.at( &e ) );
    } else {
       os << get_literal_constant( *e.tok_ptr );
    }
@@ -76,7 +74,7 @@ void write_expression( const binary_expression& e, const resolution_table& tbl, 
 }
 
 void write_expression( const call_expression& e, const resolution_table& tbl, std::ostream& os ) {
-   if( auto func_decl = tbl.function_lookup.at( e.function_name ) ) {
+   if( auto func_decl = tbl.function_lookup.at( &e ) ) {
       os << get_identifier_name( *func_decl );
    } else {
       os << get_builtin_name( *e.function_name );
@@ -172,18 +170,14 @@ void write_statement( const statement& s, const resolution_table& tbl, std::ostr
 }
 
 void write_function_header( const function_declaration& f, const resolution_table& tbl, std::ostream& os ) {
-   if( std::string_view( *f.name ) == "main" && f.parameters.size( ) == 0 ) {
-      os << "int main( )";
-   } else {
-      os << get_identifier_declaration( f ) << "(";
-      for( std::size_t i = 0; i < f.parameters.size( ); ++i ) {
-         if( i > 0 ) {
-            os << ",";
-         }
-         os << get_identifier_declaration( *f.parameters[i] );
+   os << get_identifier_declaration( f ) << "(";
+   for( std::size_t i = 0; i < f.parameters.size( ); ++i ) {
+      if( i > 0 ) {
+         os << ",";
       }
-      os << ")";
+      os << get_identifier_declaration( *f.parameters[i] );
    }
+   os << ")";
 }
 
 void write_function_definition( const function_declaration& f, const resolution_table& tbl, std::ostream& os ) {
@@ -191,8 +185,7 @@ void write_function_definition( const function_declaration& f, const resolution_
    write_statement( *f.body, tbl, os );
 }
 
-void write_program( const program_resources& pr, const resolution_table& tbl, const std::filesystem::path& include_path, std::ostream& os ) {
-   write_builtin_code( pr, include_path, os );
+void write_program( const program_resources& pr, const resolution_table& tbl, bool is_main, std::ostream& os ) {
    for( const auto& f : pr.tree.functions ) {
       write_function_header( f, tbl, os );
       os << ";\n";
@@ -201,6 +194,11 @@ void write_program( const program_resources& pr, const resolution_table& tbl, co
    for( const auto& f : pr.tree.functions ) {
       write_function_definition( f, tbl, os );
       os << "\n";
+   }
+   if( is_main ) {
+      os << "int main( ) {\n";
+      os << get_identifier_name( *pr.function_overloads.at( "main" ).at( 0 ).declaration ) << "( );\n";
+      os << "}\n";
    }
 }
 
