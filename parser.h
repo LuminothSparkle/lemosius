@@ -53,11 +53,14 @@ auto parse_function_decl( const token*& tok_ptr, const operator_map& opm ) {
    match( tok_ptr, PROC_K, "Expecting proc" );
    func.name = match( tok_ptr, IDENTIFIER_L, "Expecting an identifier" );
    match( tok_ptr, LPARENTHESIS_P, "Expecting (" );
-   while( *tok_ptr == IDENTIFIER_L ) {
-      func.parameters.push_back( match( tok_ptr, IDENTIFIER_L, "Expecting an identifier" ) );
+   while( *tok_ptr == VAR_K ) {
+      auto var = std::make_unique<var_statement>( );
+      match( tok_ptr, VAR_K, "Expecting var" );
+      var->name = match( tok_ptr, IDENTIFIER_L, "Expecting an identifier" );
       if( *tok_ptr != RPARENTHESIS_P ) {
          match( tok_ptr, COMMA_P, "Expecting ," );
       }
+      func.parameters.push_back( std::move( var ) );
    }
    match( tok_ptr, RPARENTHESIS_P, "Expecting )" );
    // Parsea las demas sentencias de la funcion

@@ -88,7 +88,7 @@ struct inclusion {
 };
 
 struct symbol { //Solo contiene datos con funciones auxiliares
-   std::variant<const token*, std::pair<const function_overload_set*, const builtin_overload_set*>> data;
+   std::variant<const var_statement*, std::pair<const function_overload_set*, const builtin_overload_set*>> data;
    auto get_variable( ) const {
       auto ptr = std::get_if<0>( &data );
       return ptr != nullptr ? *ptr : nullptr;
@@ -119,15 +119,17 @@ struct symbol { //Solo contiene datos con funciones auxiliares
    }
 };
 
-struct scope { //Solo contiene datos con funciones auxiliares
-   std::unordered_map<std::string_view, const token*> variables; //Tabla de variables
-   bool try_declare(const token& t) {
-      return variables.emplace(t.source, &t).second;
+class scope { //Solo contiene datos con funciones auxiliares
+   std::unordered_map<std::string_view, const var_statement*> variables; //Tabla de variables
+ public:
+   bool try_declare( const var_statement& stmt ) {
+      return variables.emplace( std::string_view( *stmt.name ), &stmt ).second;
    }
-   const token* find_variable(std::string_view s) const {
-      auto iter = variables.find(s);
+   auto find_variable( const token& tok ) const {
+      auto iter = variables.find( std::string_view( tok ) );
       return iter != variables.end( ) ? iter->second : nullptr;
    }
+
 };
 
 class scope_stack {
@@ -150,23 +152,23 @@ class scope_stack {
       return scope_list.back( );
    }
 
-   symbol find_symbol(std::string_view s) const {     //Devuelve un tipo diferente segun sea el caso
+   symbol find_symbol( const token& tok ) const {     //Devuelve un tipo diferente segun sea el caso
       // generalmente vamos a usar esta función para buscar una variable siempre, pero hay que identificar tres casos (para el reporte de errores):
       // 1) no existe el símbolo (regresamos nullptr)
       // 2) sí existe el símbolo y sí es variable
       // 3) sí existe el símbolo pero es una función
-      for( auto iter = scope_list.rbegin(); iter != scope_list.rend( ); ++iter ) {
-         if( auto tk = iter->find_variable(s); tk != nullptr ) {
-            return { tk };
+      for( auto iter = scope_list.rbegin( ); iter != scope_list.rend( ); ++iter ) {
+         if( auto var_ptr = iter->find_variable( tok ); var_ptr != nullptr ) {
+            return { var_ptr };
          }
       }
-
       const function_overload_set* user_overloads    = nullptr;
       const builtin_overload_set*  builtin_overloads = nullptr;
-      if( auto iter = resources.function_overloads.find(s); iter != resources.function_overloads.end( ) ) {
+      std::string_view symbol( tok );
+      if( auto iter = resources.function_overloads.find( symbol ); iter != resources.function_overloads.end( ) ) {
          user_overloads = &iter->second;
       }
-      if( auto iter = resources.builtin_overloads.find(s); iter != resources.builtin_overloads.end( ) ) {
+      if( auto iter = resources.builtin_overloads.find( symbol ); iter != resources.builtin_overloads.end( ) ) {
          builtin_overloads = &iter->second;
       }
       return { std::make_pair( user_overloads, builtin_overloads ) };
@@ -176,7 +178,7 @@ class scope_stack {
 struct resolution_table {
    const std::unordered_map<std::string_view, operator_overload_set>& operator_overloads;
    std::unordered_map<std::string_view, std::map<token_type, const function_declaration*>> operator_lookup;
-   std::unordered_map<const token*, const token*> variable_lookup;
+   std::unordered_map<const token*, const var_statement*> variable_lookup;
    std::unordered_map<const token*, const function_declaration*> function_lookup;
 };
 

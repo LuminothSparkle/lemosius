@@ -21,19 +21,14 @@ auto parse_sequence_statement( const token*& tok_ptr, const operator_map& opm ) 
 
 auto parse_if_statement( const token*& tok_ptr, const operator_map& opm ) {
    auto if_stmt = std::make_unique<if_statement>( );
-   match( tok_ptr, IF_K, "Expecting if" );
-   match( tok_ptr, LPARENTHESIS_P, "Expecting (" );
-   if_stmt->conditions.push_back( parse_expression( tok_ptr, opm ) );
-   match( tok_ptr, RPARENTHESIS_P, "Expecting )" );
-   if_stmt->bodys.push_back( parse_sequence_statement( tok_ptr, opm ) );
-   while( *tok_ptr == ELSE_K && *( tok_ptr + 1 ) == IF_K ) {
-      match( tok_ptr, ELSE_K, "Expecting else" );
+   do {
+      optional_match( tok_ptr, ELSE_K );
       match( tok_ptr, IF_K, "Expecting if" );
       match( tok_ptr, LPARENTHESIS_P, "Expecting (" );
       if_stmt->conditions.push_back( parse_expression( tok_ptr, opm ) );
       match( tok_ptr, RPARENTHESIS_P, "Expecting )" );
       if_stmt->bodys.push_back( parse_sequence_statement( tok_ptr, opm ) );
-   }
+   } while( *tok_ptr == ELSE_K && *( tok_ptr + 1 ) == IF_K );
    if( optional_match( tok_ptr, ELSE_K ) != nullptr ) {
       if_stmt->else_body = parse_sequence_statement( tok_ptr, opm );
    }

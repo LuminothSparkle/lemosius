@@ -27,19 +27,52 @@ private proc pub2_mult(a,b) {
 proc main() {
     var a := 0;
     var b := 0;
+    
     ##<c;               ##<Utilización variable que no existe
     ##<var b;           ##<Redeclaración de variable
-    pub2_plus(a,b);     ##<Utilización funcion publica de prueba2.txt
+    ##<pub_plus(a,b);   ##<Utilización una funcion que no existe
     ##<pub2_plus(a);    ##<Utilización una sobrecarga que no existe
-    ##<priv2_plus(a,b); ##<Utilización funcion privada de prueba2.txt
-    ##<pub3_plus(a,b);  ##<Utilización inclusion privada, funcion privada de prueba3.txt en prueba2.txt
-    ##<pub3_plus(a,b);  ##<Utilización inclusion privada, funcion publica de prueba3.txt en prueba2.txt
-    pub4_plus(a,b);     ##<Utilización inclusion publica, funcion publica de prueba4.txt en prueba2.txt
-    ##<priv4_plus(a,b); ##<Utilización inclusion publica, funcion privada de prueba4.txt en prueba2.txt
-    a == b;             ##<Utilización operador publico de prueba2.txt
-    ##<a ** b;          ##<Utilización operador privado de prueba2.txt, pero gana error sintactico porque observa dos operadores *
-    ##<a::;             ##<Utilización inclusión privada, operador privado de prueba3.txt en prueba2.txt
-    ##<a\\;             ##<Utilización inclusión privada, operador publico de prueba3.txt en prueba2.txt
-    a&&;                ##<Utilización inclusion publica, operador publico de prueba4.txt en prueba2.txt
-    ##<a||;             ##<Utilización inclusion publica, operador privado de prueba4.txt en prueba2.txt
+    ##<addition(a);     ##<Utilización una builtin que no existe
+    a * b;              ##<Utiliza operador * de prueba2.lem
+    ##<a ** b;
+    ##<a *** b;
+
+    ##<Utilización de funciones de prueba2.lem
+
+    pub2_plus(a,b);     ##<Declaracion publica
+    ##<priv2_plus(a,b); ##<Declaracion privada
+
+    ##<Utilización de funciones de inclusion privada prueba3.lem en prueba2.lem
+
+    ##<pub3_plus(a,b);  ##<Declaracion publica
+    ##<priv3_plus(a,b); ##<Declaracion privada
+
+    ##<Utilización de funciones de inclusion privada prueba4.lem en prueba2.lem
+
+    pub4_plus(a,b);     ##<Declaracion publica
+    ##<priv4_plus(a,b); ##<Declaracion privada
+
+    ##<Utilización de operadores de prueba2.lem
+
+    a!=b;               ##<Declaracion publica definicion publica.
+    ##<a==b;            ##<Declaracion publica definicion privada.
+    ##<a<=b;            ##<Declaracion privada definicion publica
+    ##<a>=b;            ##<Declaracion privada definicion privada
+
+    ##<Utilización de operadores de inclusion privada prueba3.lem en prueba2.lem
+
+    ##<a\\;             ##<Declaracion publica definicion publica.
+    ##<a..;             ##<Declaracion publica definicion privada.
+    ##<a::;             ##<Declaracion privada definicion publica
+    ##<a??;             ##<Declaracion privada definicion privada
+
+    ##<Utilización de operadores de inclusion publica prueba4.lem en prueba2.lem
+
+    a&&;                ##<Declaracion publica definicion publica.
+    ##<a!!;             ##<Declaracion publica definicion privada.
+    ##<a'';             ##<Declaracion privada definicion publica
+    ##<a||;             ##<Declaracion privada definicion privada
+    
+    print(a + 2);
+    print(b + 1);
 }

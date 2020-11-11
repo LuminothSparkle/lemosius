@@ -98,6 +98,4 @@ std::string unquoted_str( const token& tok, const std::string& err_mes = "" ) {
    return str;
 }
 
-
-
 #endif
