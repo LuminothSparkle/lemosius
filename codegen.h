@@ -67,8 +67,7 @@ void write_expression( const suffix_expression& e, const resolution_table& tbl, 
 void write_expression( const binary_expression& e, const resolution_table& tbl, std::ostream& os ) {
    if( *e.op == ASSIGNMENT_O ) {
       os << get_builtin_invoke( "assign" );
-   }
-   else if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( INFIX_K ); func_decl != nullptr ) {
+   } else if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( INFIX_K ); func_decl != nullptr ) {
       os << get_identifier_name( *func_decl );
    } else {
       os << get_builtin_invoke( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( INFIX_K ).declaration->function );

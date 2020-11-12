@@ -411,220 +411,220 @@ T isunordered( const T& a ) {
 
 #endif //MATH_LEM
 
-long double pub3_mult_0xc568c0(long double a_0x8eee80,long double b_0x8ee9c0);
-long double pub3_div_0xc568f0(long double a_0x8eee20,long double b_0x8eeea0);
-long double pub3_plus_0xc56920(long double a_0x8ee800,long double b_0x8ee820);
-long double pub3_minus_0xc56950(long double a_0x8ee940,long double b_0x8ee960);
-long double pub3_minus_0xc56980(long double a_0xc404c0);
-long double pub3_hashtag_0xc569b0(long double a_0xc40700);
-long double priv3_mult_0xc569e0(long double a_0xc40560,long double b_0xc404e0);
-long double priv3_div_0xc56a10(long double a_0xc40460,long double b_0xc405a0);
-long double priv3_plus_0xc56a40(long double a_0xc40780,long double b_0xc401a0);
-long double priv3_minus_0xc56a70(long double a_0xc40260,long double b_0xc407e0);
-long double priv3_minus_0xc56aa0(long double a_0xc40840);
-long double priv3_hashtag_0xc56ad0(long double a_0xc40880);
+long double pub3_mult_0x852980(long double a_0x15e1a0,long double b_0x15e5e0);
+long double pub3_div_0x8529b0(long double a_0x15e3c0,long double b_0x15e740);
+long double pub3_plus_0x8529e0(long double a_0x15e800,long double b_0x15e860);
+long double pub3_minus_0x852a10(long double a_0x8524e0,long double b_0x8525a0);
+long double pub3_minus_0x852a40(long double a_0x852500);
+long double pub3_hashtag_0x852a70(long double a_0x852480);
+long double priv3_mult_0x852aa0(long double a_0x8522a0,long double b_0x8523a0);
+long double priv3_div_0x852ad0(long double a_0x8523c0,long double b_0x8521c0);
+long double priv3_plus_0x852b00(long double a_0x852360,long double b_0x8524a0);
+long double priv3_minus_0x852b30(long double a_0x852340,long double b_0x8526e0);
+long double priv3_minus_0x852b60(long double a_0x852300);
+long double priv3_hashtag_0x852b90(long double a_0x852280);
 
-long double pub3_mult_0xc568c0(long double a_0x8eee80,long double b_0x8ee9c0){
-return priv3_mult_0xc569e0(a_0x8eee80,b_0x8ee9c0);
+long double pub3_mult_0x852980(long double a_0x15e1a0,long double b_0x15e5e0){
+return priv3_mult_0x852aa0(a_0x15e1a0,b_0x15e5e0);
 }
 
-long double pub3_div_0xc568f0(long double a_0x8eee20,long double b_0x8eeea0){
-return priv3_div_0xc56a10(a_0x8eee20,b_0x8eeea0);
+long double pub3_div_0x8529b0(long double a_0x15e3c0,long double b_0x15e740){
+return priv3_div_0x852ad0(a_0x15e3c0,b_0x15e740);
 }
 
-long double pub3_plus_0xc56920(long double a_0x8ee800,long double b_0x8ee820){
-return priv3_plus_0xc56a40(a_0x8ee800,b_0x8ee820);
+long double pub3_plus_0x8529e0(long double a_0x15e800,long double b_0x15e860){
+return priv3_plus_0x852b00(a_0x15e800,b_0x15e860);
 }
 
-long double pub3_minus_0xc56950(long double a_0x8ee940,long double b_0x8ee960){
-return priv3_minus_0xc56a70(a_0x8ee940,b_0x8ee960);
+long double pub3_minus_0x852a10(long double a_0x8524e0,long double b_0x8525a0){
+return priv3_minus_0x852b30(a_0x8524e0,b_0x8525a0);
 }
 
-long double pub3_minus_0xc56980(long double a_0xc404c0){
-return priv3_minus_0xc56aa0(a_0xc404c0);
+long double pub3_minus_0x852a40(long double a_0x852500){
+return priv3_minus_0x852b60(a_0x852500);
 }
 
-long double pub3_hashtag_0xc569b0(long double a_0xc40700){
-return priv3_hashtag_0xc56ad0(a_0xc40700);
+long double pub3_hashtag_0x852a70(long double a_0x852480){
+return priv3_hashtag_0x852b90(a_0x852480);
 }
 
-long double priv3_mult_0xc569e0(long double a_0xc40560,long double b_0xc404e0){
-return product<long double>(a_0xc40560,b_0xc404e0);
+long double priv3_mult_0x852aa0(long double a_0x8522a0,long double b_0x8523a0){
+return product<long double>(a_0x8522a0,b_0x8523a0);
 }
 
-long double priv3_div_0xc56a10(long double a_0xc40460,long double b_0xc405a0){
-return division<long double>(a_0xc40460,b_0xc405a0);
+long double priv3_div_0x852ad0(long double a_0x8523c0,long double b_0x8521c0){
+return division<long double>(a_0x8523c0,b_0x8521c0);
 }
 
-long double priv3_plus_0xc56a40(long double a_0xc40780,long double b_0xc401a0){
-return addition<long double>(a_0xc40780,b_0xc401a0);
+long double priv3_plus_0x852b00(long double a_0x852360,long double b_0x8524a0){
+return addition<long double>(a_0x852360,b_0x8524a0);
 }
 
-long double priv3_minus_0xc56a70(long double a_0xc40260,long double b_0xc407e0){
-return subtraction<long double>(a_0xc40260,b_0xc407e0);
+long double priv3_minus_0x852b30(long double a_0x852340,long double b_0x8526e0){
+return subtraction<long double>(a_0x852340,b_0x8526e0);
 }
 
-long double priv3_minus_0xc56aa0(long double a_0xc40840){
-return minus<long double>(a_0xc40840);
+long double priv3_minus_0x852b60(long double a_0x852300){
+return minus<long double>(a_0x852300);
 }
 
-long double priv3_hashtag_0xc56ad0(long double a_0xc40880){
-return print<long double>(a_0xc40880);
+long double priv3_hashtag_0x852b90(long double a_0x852280){
+return print<long double>(a_0x852280);
 }
 
-long double pub4_mult_0xc5f1a0(long double a_0x8eed60,long double b_0x8eea00);
-long double pub4_div_0xc5f1d0(long double a_0x8eeee0,long double b_0xc40420);
-long double pub4_plus_0xc5f200(long double a_0xc62600,long double b_0xc624e0);
-long double pub4_minus_0xc5f230(long double a_0xc62580,long double b_0xc625a0);
-long double pub4_minus_0xc5f260(long double a_0xc626a0);
-long double pub4_hashtag_0xc5f290(long double a_0xc62380);
-long double priv4_mult_0xc5f2c0(long double a_0xc62400,long double b_0xc62420);
-long double priv4_div_0xc5f2f0(long double a_0xc5ee00,long double b_0xc5ea80);
-long double priv4_plus_0xc5f320(long double a_0xc5ef00,long double b_0xc5eb20);
-long double priv4_minus_0xc5f350(long double a_0xc5eea0,long double b_0xc5eb00);
-long double priv4_minus_0xc5f380(long double a_0xc5eca0);
-long double priv4_hashtag_0xc5f3b0(long double a_0xc5ec00);
+long double pub4_mult_0x856060(long double a_0x15e240,long double b_0x15e360);
+long double pub4_div_0x856090(long double a_0x8547f0,long double b_0x8546b0);
+long double pub4_plus_0x8560c0(long double a_0x854710,long double b_0x8547b0);
+long double pub4_minus_0x8560f0(long double a_0x854290,long double b_0x854090);
+long double pub4_minus_0x856120(long double a_0x854210);
+long double pub4_hashtag_0x856150(long double a_0x854230);
+long double priv4_mult_0x856180(long double a_0x8540b0,long double b_0x854590);
+long double priv4_div_0x8561b0(long double a_0x8540f0,long double b_0x8541d0);
+long double priv4_plus_0x8561e0(long double a_0x854650,long double b_0x8545b0);
+long double priv4_minus_0x856210(long double a_0x8543f0,long double b_0x8542d0);
+long double priv4_minus_0x856240(long double a_0x854410);
+long double priv4_hashtag_0x856270(long double a_0x854470);
 
-long double pub4_mult_0xc5f1a0(long double a_0x8eed60,long double b_0x8eea00){
-return priv4_mult_0xc5f2c0(a_0x8eed60,b_0x8eea00);
+long double pub4_mult_0x856060(long double a_0x15e240,long double b_0x15e360){
+return priv4_mult_0x856180(a_0x15e240,b_0x15e360);
 }
 
-long double pub4_div_0xc5f1d0(long double a_0x8eeee0,long double b_0xc40420){
-return priv4_div_0xc5f2f0(a_0x8eeee0,b_0xc40420);
+long double pub4_div_0x856090(long double a_0x8547f0,long double b_0x8546b0){
+return priv4_div_0x8561b0(a_0x8547f0,b_0x8546b0);
 }
 
-long double pub4_plus_0xc5f200(long double a_0xc62600,long double b_0xc624e0){
-return priv4_plus_0xc5f320(a_0xc62600,b_0xc624e0);
+long double pub4_plus_0x8560c0(long double a_0x854710,long double b_0x8547b0){
+return priv4_plus_0x8561e0(a_0x854710,b_0x8547b0);
 }
 
-long double pub4_minus_0xc5f230(long double a_0xc62580,long double b_0xc625a0){
-return priv4_minus_0xc5f350(a_0xc62580,b_0xc625a0);
+long double pub4_minus_0x8560f0(long double a_0x854290,long double b_0x854090){
+return priv4_minus_0x856210(a_0x854290,b_0x854090);
 }
 
-long double pub4_minus_0xc5f260(long double a_0xc626a0){
-return priv4_minus_0xc5f380(a_0xc626a0);
+long double pub4_minus_0x856120(long double a_0x854210){
+return priv4_minus_0x856240(a_0x854210);
 }
 
-long double pub4_hashtag_0xc5f290(long double a_0xc62380){
-return priv4_hashtag_0xc5f3b0(a_0xc62380);
+long double pub4_hashtag_0x856150(long double a_0x854230){
+return priv4_hashtag_0x856270(a_0x854230);
 }
 
-long double priv4_mult_0xc5f2c0(long double a_0xc62400,long double b_0xc62420){
-return product<long double>(a_0xc62400,b_0xc62420);
+long double priv4_mult_0x856180(long double a_0x8540b0,long double b_0x854590){
+return product<long double>(a_0x8540b0,b_0x854590);
 }
 
-long double priv4_div_0xc5f2f0(long double a_0xc5ee00,long double b_0xc5ea80){
-return division<long double>(a_0xc5ee00,b_0xc5ea80);
+long double priv4_div_0x8561b0(long double a_0x8540f0,long double b_0x8541d0){
+return division<long double>(a_0x8540f0,b_0x8541d0);
 }
 
-long double priv4_plus_0xc5f320(long double a_0xc5ef00,long double b_0xc5eb20){
-return addition<long double>(a_0xc5ef00,b_0xc5eb20);
+long double priv4_plus_0x8561e0(long double a_0x854650,long double b_0x8545b0){
+return addition<long double>(a_0x854650,b_0x8545b0);
 }
 
-long double priv4_minus_0xc5f350(long double a_0xc5eea0,long double b_0xc5eb00){
-return subtraction<long double>(a_0xc5eea0,b_0xc5eb00);
+long double priv4_minus_0x856210(long double a_0x8543f0,long double b_0x8542d0){
+return subtraction<long double>(a_0x8543f0,b_0x8542d0);
 }
 
-long double priv4_minus_0xc5f380(long double a_0xc5eca0){
-return minus<long double>(a_0xc5eca0);
+long double priv4_minus_0x856240(long double a_0x854410){
+return minus<long double>(a_0x854410);
 }
 
-long double priv4_hashtag_0xc5f3b0(long double a_0xc5ec00){
-return print<long double>(a_0xc5ec00);
+long double priv4_hashtag_0x856270(long double a_0x854470){
+return print<long double>(a_0x854470);
 }
 
-long double pub2_mult_0xc61ef0(long double a_0xc5ec80,long double b_0xc5eee0);
-long double pub2_div_0xc61f20(long double a_0xc5ed60,long double b_0xc5efa0);
-long double pub2_plus_0xc61f50(long double a_0xc5f120,long double b_0xc5eb40);
-long double pub2_minus_0xc61f80(long double a_0xc5f0a0,long double b_0xc5ecc0);
-long double pub2_minus_0xc61fb0(long double a_0xc5ece0);
-long double pub2_hashtag_0xc61fe0(long double a_0xc5ede0);
-long double priv2_mult_0xc62010(long double a_0xc401e0,long double b_0xc40200);
-long double priv2_div_0xc62040(long double a_0xc61830,long double b_0xc61cb0);
-long double priv2_plus_0xc62070(long double a_0xc61e30,long double b_0xc61a50);
-long double priv2_minus_0xc620a0(long double a_0xc61a90,long double b_0xc61c30);
-long double priv2_minus_0xc620d0(long double a_0xc61870);
-long double priv2_hashtag_0xc62100(long double a_0xc61970);
+long double pub2_mult_0x8605a0(long double a_0x855230,long double b_0x855190);
+long double pub2_div_0x8605d0(long double a_0x8554f0,long double b_0x855610);
+long double pub2_plus_0x860600(long double a_0x855470,long double b_0x8550b0);
+long double pub2_minus_0x860630(long double a_0x8555d0,long double b_0x855430);
+long double pub2_minus_0x860660(long double a_0x8552f0);
+long double pub2_hashtag_0x860690(long double a_0x855830);
+long double priv2_mult_0x8606c0(long double a_0x8554b0,long double b_0x8553b0);
+long double priv2_div_0x8606f0(long double a_0x855630,long double b_0x855650);
+long double priv2_plus_0x860720(long double a_0x855170,long double b_0x855710);
+long double priv2_minus_0x860750(long double a_0x8552b0,long double b_0x8557f0);
+long double priv2_minus_0x860780(long double a_0x15e780);
+long double priv2_hashtag_0x8607b0(long double a_0x852820);
 
-long double pub2_mult_0xc61ef0(long double a_0xc5ec80,long double b_0xc5eee0){
-return priv2_mult_0xc62010(a_0xc5ec80,b_0xc5eee0);
+long double pub2_mult_0x8605a0(long double a_0x855230,long double b_0x855190){
+return priv2_mult_0x8606c0(a_0x855230,b_0x855190);
 }
 
-long double pub2_div_0xc61f20(long double a_0xc5ed60,long double b_0xc5efa0){
-return priv2_div_0xc62040(a_0xc5ed60,b_0xc5efa0);
+long double pub2_div_0x8605d0(long double a_0x8554f0,long double b_0x855610){
+return priv2_div_0x8606f0(a_0x8554f0,b_0x855610);
 }
 
-long double pub2_plus_0xc61f50(long double a_0xc5f120,long double b_0xc5eb40){
-return priv2_plus_0xc62070(a_0xc5f120,b_0xc5eb40);
+long double pub2_plus_0x860600(long double a_0x855470,long double b_0x8550b0){
+return priv2_plus_0x860720(a_0x855470,b_0x8550b0);
 }
 
-long double pub2_minus_0xc61f80(long double a_0xc5f0a0,long double b_0xc5ecc0){
-return priv2_minus_0xc620a0(a_0xc5f0a0,b_0xc5ecc0);
+long double pub2_minus_0x860630(long double a_0x8555d0,long double b_0x855430){
+return priv2_minus_0x860750(a_0x8555d0,b_0x855430);
 }
 
-long double pub2_minus_0xc61fb0(long double a_0xc5ece0){
-return priv2_minus_0xc620d0(a_0xc5ece0);
+long double pub2_minus_0x860660(long double a_0x8552f0){
+return priv2_minus_0x860780(a_0x8552f0);
 }
 
-long double pub2_hashtag_0xc61fe0(long double a_0xc5ede0){
-return priv2_hashtag_0xc62100(a_0xc5ede0);
+long double pub2_hashtag_0x860690(long double a_0x855830){
+return priv2_hashtag_0x8607b0(a_0x855830);
 }
 
-long double priv2_mult_0xc62010(long double a_0xc401e0,long double b_0xc40200){
-return product<long double>(a_0xc401e0,b_0xc40200);
+long double priv2_mult_0x8606c0(long double a_0x8554b0,long double b_0x8553b0){
+return product<long double>(a_0x8554b0,b_0x8553b0);
 }
 
-long double priv2_div_0xc62040(long double a_0xc61830,long double b_0xc61cb0){
-return division<long double>(a_0xc61830,b_0xc61cb0);
+long double priv2_div_0x8606f0(long double a_0x855630,long double b_0x855650){
+return division<long double>(a_0x855630,b_0x855650);
 }
 
-long double priv2_plus_0xc62070(long double a_0xc61e30,long double b_0xc61a50){
-return addition<long double>(a_0xc61e30,b_0xc61a50);
+long double priv2_plus_0x860720(long double a_0x855170,long double b_0x855710){
+return addition<long double>(a_0x855170,b_0x855710);
 }
 
-long double priv2_minus_0xc620a0(long double a_0xc61a90,long double b_0xc61c30){
-return subtraction<long double>(a_0xc61a90,b_0xc61c30);
+long double priv2_minus_0x860750(long double a_0x8552b0,long double b_0x8557f0){
+return subtraction<long double>(a_0x8552b0,b_0x8557f0);
 }
 
-long double priv2_minus_0xc620d0(long double a_0xc61870){
-return minus<long double>(a_0xc61870);
+long double priv2_minus_0x860780(long double a_0x15e780){
+return minus<long double>(a_0x15e780);
 }
 
-long double priv2_hashtag_0xc62100(long double a_0xc61970){
-return print<long double>(a_0xc61970);
+long double priv2_hashtag_0x8607b0(long double a_0x852820){
+return print<long double>(a_0x852820);
 }
 
-long double factorial_0xc53dd0(long double n_0xc618b0);
-long double main_0xc53e00();
+long double factorial_0x8548a0(long double n_0x835560);
+long double main_0x8548d0();
 
-long double factorial_0xc53dd0(long double n_0xc618b0){
-if (less_equal<long double>(n_0xc618b0, static_cast<long double>(0))){
+long double factorial_0x8548a0(long double n_0x835560){
+if (less_equal<long double>(n_0x835560, static_cast<long double>(0))){
 return static_cast<long double>(1);
 }
 else {
-return pub2_mult_0xc61ef0(n_0xc618b0, factorial_0xc53dd0(pub2_minus_0xc61f80(n_0xc618b0, static_cast<long double>(1))));
+return pub2_mult_0x8605a0(n_0x835560, factorial_0x8548a0(pub2_minus_0x860630(n_0x835560, static_cast<long double>(1))));
 }
 return static_cast<long double>(0);
 }
 
-long double main_0xc53e00(){
-long double a_0xc61d90 = static_cast<long double>(0);
-long double b_0xc61e70 = static_cast<long double>(0);
-print<long double>(factorial_0xc53dd0(static_cast<long double>(5)));
-pub2_mult_0xc61ef0(a_0xc61d90, b_0xc61e70);
-pub2_div_0xc61f20(a_0xc61d90, b_0xc61e70);
-pub2_minus_0xc61f80(a_0xc61d90, b_0xc61e70);
-pub2_plus_0xc61f50(a_0xc61d90,b_0xc61e70);
-pub4_plus_0xc5f200(a_0xc61d90,b_0xc61e70);
-pub2_plus_0xc61f50(a_0xc61d90, b_0xc61e70);
-pub4_hashtag_0xc5f290(a_0xc61d90);
-long double c_0x8eea20 = read<long double>();
-print<long double>(pub2_plus_0xc61f50(a_0xc61d90, static_cast<long double>(2)));
-print<long double>(pub2_plus_0xc61f50(b_0xc61e70, static_cast<long double>(1)));
-print<long double>(c_0x8eea20);
+long double main_0x8548d0(){
+long double a_0x8359e0 = static_cast<long double>(0);
+long double b_0x835980 = static_cast<long double>(0);
+print<long double>(factorial_0x8548a0(static_cast<long double>(5)));
+pub2_mult_0x8605a0(a_0x8359e0, b_0x835980);
+pub2_div_0x8605d0(a_0x8359e0, b_0x835980);
+pub2_minus_0x860630(a_0x8359e0, b_0x835980);
+pub2_plus_0x860600(a_0x8359e0,b_0x835980);
+pub4_plus_0x8560c0(a_0x8359e0,b_0x835980);
+pub2_plus_0x860600(a_0x8359e0, b_0x835980);
+pub4_hashtag_0x856150(a_0x8359e0);
+long double c_0x8357c0 = read<long double>();
+print<long double>(pub2_plus_0x860600(a_0x8359e0, static_cast<long double>(2)));
+print<long double>(pub2_plus_0x860600(b_0x835980, static_cast<long double>(1)));
+print<long double>(c_0x8357c0);
 return static_cast<long double>(0);
 }
 
 int main( ) {
-main_0xc53e00( );
+main_0x8548d0( );
 }

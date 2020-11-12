@@ -32,8 +32,8 @@ VALUE_TYPE analyze_expression( const suffix_expression& e, scope_stack& ss, reso
 
 VALUE_TYPE analyze_expression( const binary_expression& e, scope_stack& ss, resolution_table& tbl ) {
    auto ltype = analyze_expression( *e.exp1, ss, tbl );
-   if(ltype == RVALUE && *e.op == ASSIGNMENT_O) {
-      throw std::pair<token, std::string>( *e.op, "Trying to assign a rvalue.");
+   if( ltype == RVALUE && *e.op == ASSIGNMENT_O ) {
+      throw std::pair<token, std::string>( *e.op, "Trying to assign a rvalue." );
    }
    analyze_expression( *e.exp2, ss, tbl );
    return RVALUE;

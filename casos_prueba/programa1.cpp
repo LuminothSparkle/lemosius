@@ -411,85 +411,85 @@ T isunordered( const T& a ) {
 
 #endif //MATH_LEM
 
-long double factorial_0x841a80(long double a_0x837f50);
-long double inv_division_0x841ab0(long double a_0x837a10,long double b_0x837990);
-long double inv_int_division_0x841ae0(long double a_0x837a90,long double b_0x8379d0);
-long double integer_division_0x841b10(long double a_0x837950,long double b_0x837a70);
-long double implies_0x841b40(long double a_0x837d10,long double b_0x837c90);
-long double biconditional_0x841b70(long double a_0x837f10,long double b_0x837b50);
-long double logic_not_0x841ba0(long double a_0x837e10);
-long double logic_and_0x841bd0(long double a_0x837d70,long double b_0x837d90);
-long double logic_or_0x841c00(long double a_0xe29290,long double b_0x83d5d0);
-long double percentage_0x841c30(long double a_0x83d330);
-long double gcd_0x841c60(long double a_0x83d7d0,long double b_0x83d770);
-long double mcd_0x841c90(long double a_0x83d350,long double b_0x83d8d0);
-long double main_0x841cc0();
+long double factorial_0x8456b0(long double a_0x1be320);
+long double inv_division_0x8456e0(long double a_0x1bdd60,long double b_0x1be140);
+long double inv_int_division_0x845710(long double a_0x1be2c0,long double b_0x1bddc0);
+long double integer_division_0x845740(long double a_0x1be040,long double b_0x1bde80);
+long double implies_0x845770(long double a_0x1be3c0,long double b_0x1be460);
+long double biconditional_0x8457a0(long double a_0x1bdd20,long double b_0x1bdec0);
+long double logic_not_0x8457d0(long double a_0x1be340);
+long double logic_and_0x845800(long double a_0x1be3e0,long double b_0x1be400);
+long double logic_or_0x845830(long double a_0x84c8f0,long double b_0x84c6b0);
+long double percentage_0x845860(long double a_0x84cd10);
+long double gcd_0x845890(long double a_0x84cad0,long double b_0x84c970);
+long double mcd_0x8458c0(long double a_0x84ca10,long double b_0x84c950);
+long double main_0x8458f0();
 
-long double factorial_0x841a80(long double a_0x837f50){
-if (less_equal<long double>(a_0x837f50, static_cast<long double>(0))){
+long double factorial_0x8456b0(long double a_0x1be320){
+if (less_equal<long double>(a_0x1be320, static_cast<long double>(0))){
 return static_cast<long double>(1);
 }
-return product<long double>(a_0x837f50, factorial_0x841a80(subtraction<long double>(a_0x837f50, static_cast<long double>(1))));
+return product<long double>(a_0x1be320, factorial_0x8456b0(subtraction<long double>(a_0x1be320, static_cast<long double>(1))));
 }
 
-long double inv_division_0x841ab0(long double a_0x837a10,long double b_0x837990){
-return division<long double>(b_0x837990, a_0x837a10);
+long double inv_division_0x8456e0(long double a_0x1bdd60,long double b_0x1be140){
+return division<long double>(b_0x1be140, a_0x1bdd60);
 }
 
-long double inv_int_division_0x841ae0(long double a_0x837a90,long double b_0x8379d0){
-return floor<long double>(division<long double>(b_0x8379d0, a_0x837a90));
+long double inv_int_division_0x845710(long double a_0x1be2c0,long double b_0x1bddc0){
+return floor<long double>(division<long double>(b_0x1bddc0, a_0x1be2c0));
 }
 
-long double integer_division_0x841b10(long double a_0x837950,long double b_0x837a70){
-return floor<long double>(division<long double>(a_0x837950, b_0x837a70));
+long double integer_division_0x845740(long double a_0x1be040,long double b_0x1bde80){
+return floor<long double>(division<long double>(a_0x1be040, b_0x1bde80));
 }
 
-long double implies_0x841b40(long double a_0x837d10,long double b_0x837c90){
-return logic_or_0x841c00(not_equal<long double>(b_0x837c90, static_cast<long double>(0)), logic_and_0x841bd0(equal<long double>(a_0x837d10, static_cast<long double>(0)), equal<long double>(b_0x837c90, static_cast<long double>(0))));
+long double implies_0x845770(long double a_0x1be3c0,long double b_0x1be460){
+return logic_or_0x845830(not_equal<long double>(b_0x1be460, static_cast<long double>(0)), logic_and_0x845800(equal<long double>(a_0x1be3c0, static_cast<long double>(0)), equal<long double>(b_0x1be460, static_cast<long double>(0))));
 }
 
-long double biconditional_0x841b70(long double a_0x837f10,long double b_0x837b50){
-return logic_or_0x841c00(logic_and_0x841bd0(not_equal<long double>(a_0x837f10, static_cast<long double>(0)), not_equal<long double>(b_0x837b50, static_cast<long double>(0))), logic_and_0x841bd0(equal<long double>(a_0x837f10, static_cast<long double>(0)), equal<long double>(b_0x837b50, static_cast<long double>(0))));
+long double biconditional_0x8457a0(long double a_0x1bdd20,long double b_0x1bdec0){
+return logic_or_0x845830(logic_and_0x845800(not_equal<long double>(a_0x1bdd20, static_cast<long double>(0)), not_equal<long double>(b_0x1bdec0, static_cast<long double>(0))), logic_and_0x845800(equal<long double>(a_0x1bdd20, static_cast<long double>(0)), equal<long double>(b_0x1bdec0, static_cast<long double>(0))));
 }
 
-long double logic_not_0x841ba0(long double a_0x837e10){
-return not_equal<long double>(a_0x837e10, static_cast<long double>(0));
+long double logic_not_0x8457d0(long double a_0x1be340){
+return not_equal<long double>(a_0x1be340, static_cast<long double>(0));
 }
 
-long double logic_and_0x841bd0(long double a_0x837d70,long double b_0x837d90){
-return product<long double>(not_equal<long double>(a_0x837d70, static_cast<long double>(0)), not_equal<long double>(b_0x837d90, static_cast<long double>(0)));
+long double logic_and_0x845800(long double a_0x1be3e0,long double b_0x1be400){
+return product<long double>(not_equal<long double>(a_0x1be3e0, static_cast<long double>(0)), not_equal<long double>(b_0x1be400, static_cast<long double>(0)));
 }
 
-long double logic_or_0x841c00(long double a_0xe29290,long double b_0x83d5d0){
-return not_equal<long double>(addition<long double>(not_equal<long double>(a_0xe29290, static_cast<long double>(0)), not_equal<long double>(b_0x83d5d0, static_cast<long double>(0))), static_cast<long double>(0));
+long double logic_or_0x845830(long double a_0x84c8f0,long double b_0x84c6b0){
+return not_equal<long double>(addition<long double>(not_equal<long double>(a_0x84c8f0, static_cast<long double>(0)), not_equal<long double>(b_0x84c6b0, static_cast<long double>(0))), static_cast<long double>(0));
 }
 
-long double percentage_0x841c30(long double a_0x83d330){
-return division<long double>(a_0x83d330, static_cast<long double>(100));
+long double percentage_0x845860(long double a_0x84cd10){
+return division<long double>(a_0x84cd10, static_cast<long double>(100));
 }
 
-long double gcd_0x841c60(long double a_0x83d7d0,long double b_0x83d770){
-if (equal<long double>(b_0x83d770, static_cast<long double>(0))){
-return a_0x83d7d0;
+long double gcd_0x845890(long double a_0x84cad0,long double b_0x84c970){
+if (equal<long double>(b_0x84c970, static_cast<long double>(0))){
+return a_0x84cad0;
 }
-assign<long double>(a_0x83d7d0, mod<long double>(a_0x83d7d0, b_0x83d770));
-return gcd_0x841c60(b_0x83d770,a_0x83d7d0);
-}
-
-long double mcd_0x841c90(long double a_0x83d350,long double b_0x83d8d0){
-return product<long double>(division<long double>(a_0x83d350, gcd_0x841c60(a_0x83d350,b_0x83d8d0)), b_0x83d8d0);
+assign<long double>(a_0x84cad0, mod<long double>(a_0x84cad0, b_0x84c970));
+return gcd_0x845890(b_0x84c970,a_0x84cad0);
 }
 
-long double main_0x841cc0(){
-long double a_0x83d850;
-long double b_0x83d970;
-long double c_0x83d310;
-read<long double>(a_0x83d850,b_0x83d970);
-read<long double>(c_0x83d310);
-print<long double>(logic_or_0x841c00(a_0x83d850, logic_and_0x841bd0(b_0x83d970, c_0x83d310)));
+long double mcd_0x8458c0(long double a_0x84ca10,long double b_0x84c950){
+return product<long double>(division<long double>(a_0x84ca10, gcd_0x845890(a_0x84ca10,b_0x84c950)), b_0x84c950);
+}
+
+long double main_0x8458f0(){
+long double a_0x84cb30;
+long double b_0x84cb50;
+long double c_0x84cc90;
+read<long double>(a_0x84cb30,b_0x84cb50);
+read<long double>(c_0x84cc90);
+print<long double>(logic_or_0x845830(a_0x84cb30, logic_and_0x845800(b_0x84cb50, c_0x84cc90)));
 return static_cast<long double>(0);
 }
 
 int main( ) {
-main_0x841cc0( );
+main_0x8458f0( );
 }

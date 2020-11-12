@@ -71,7 +71,7 @@ try {
    if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
       return {};
    }
-   program_resources pr(builtin_overloads);
+   program_resources pr( builtin_overloads );
    pr.source_path = path;
    pr.source_file = read_file( path );
    compiled.try_emplace( pr.source_path, pr.source_file );
@@ -130,28 +130,22 @@ auto include_builtins( const std::filesystem::path& include_path, std::ostream& 
    if( !std::filesystem::exists( include_path ) || !std::filesystem::is_directory( include_path ) ) {
       std::cout << "Warning: Include directory not found in executable directory\n";
       std::cout << "Not including builtin functions\n.";
-   }
-   else {
+   } else {
       for( const auto& path : std::filesystem::directory_iterator( include_path ) ) {
-         if(path.path().extension() == ".h" || path.path().extension() == ".dat") {
+         if( path.path( ).extension( ) == ".h" || path.path( ).extension( ) == ".dat" ) {
             auto buffer = read_file( path );
             std::remove( buffer.begin( ), buffer.end( ), '\r' );
-            if(path.path().extension() == ".h") {
+            if( path.path( ).extension( ) == ".h" ) {
                os << buffer.data( ) << "\n";
-            }
-            else if(path.path().extension() == ".dat") {
-               for(auto iter = buffer.begin(); iter != buffer.end(); iter = iter != buffer.end() ? std::next(iter) : iter) {
-                  auto sig = std::find(iter,buffer.end(),'\n');
-                  std::istringstream iss(std::string(iter,sig));
-                  std::string name;
-                  if(iss >> name) {
-                     while(!name.starts_with('#') && iss) {
-                        std::size_t arity;
-                        iss >> arity;
-                        builtin_overloads[name].push_back(arity);
+            } else if( path.path( ).extension( ) == ".dat" ) {
+               for( const auto& line : get_lines( buffer ) ) {
+                  auto words = get_words( line );
+                  if( !words.empty( ) && !words.front( ).starts_with( '#' ) ) {
+                     const auto& name = words.front( );
+                     for( auto iter = std::next( words.begin( ) ); iter != words.end( ); ++iter ) {
+                        builtin_overloads[name].push_back( std::stoull( *iter ) );
                      }
                   }
-                  std::swap(iter,sig);
                }
             }
          }
@@ -178,15 +172,14 @@ try {
    if( std::filesystem::exists( destiny_path ) && std::filesystem::is_regular_file( destiny_path ) ) {
       std::string res;
       std::cout << "Warning: Destiny file: " << destiny_path << " already exists.\n";
-      while(res != "Y" && res != "N") {
+      while( res != "Y" && res != "N" ) {
          std::cout << "Overwrite file? [Y/N]\n";
          std::cin >> res;
       }
-      if(res == "N") {
+      if( res == "N" ) {
          return 0;
       }
-   }
-   else if( !std::filesystem::is_regular_file( destiny_path ) ) {
+   } else if( !std::filesystem::is_regular_file( destiny_path ) ) {
       std::cout << "Error: Destiny file is not a regular file\n.";
       return 0;
    }

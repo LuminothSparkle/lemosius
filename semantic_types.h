@@ -46,10 +46,10 @@ struct program_resources {
    std::unordered_map<std::string_view, function_overload_set> function_overloads;
    std::unordered_map<std::string_view, builtin_overload_set> builtin_overloads;
 
-   program_resources(const auto& builtin_decls) {
-      for(const auto&[name,overloads] : builtin_decls) {
-         for(const auto& arity : overloads) {
-            builtin_overloads[name].insert(arity);
+   program_resources( const auto& builtin_decls ) {
+      for( const auto&[name, overloads] : builtin_decls ) {
+         for( const auto& arity : overloads ) {
+            builtin_overloads[name].insert( arity );
          }
       }
    }
