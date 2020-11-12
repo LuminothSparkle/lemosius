@@ -107,14 +107,14 @@ void analyze_statement( const if_statement& s, scope_stack& ss, resolution_table
 }
 
 void analyze_statement( const var_statement& s, scope_stack& ss, resolution_table& tbl ) {
+   if( s.value != nullptr ) {
+      analyze_expression( *s.value, ss, tbl );
+   }
    if( !ss.top( ).try_declare( s ) ) {
       throw std::vector<std::pair<token, std::string>>( {
          { *s.name,                                   "Variable redeclaration." },
          { *ss.top( ).find_variable( *s.name )->name, "Previously declared." }
       } );
-   }
-   if( s.value != nullptr ) {
-      analyze_expression( *s.value, ss, tbl );
    }
 }
 

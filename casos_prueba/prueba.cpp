@@ -1,7 +1,8 @@
-#ifndef BUILTINS_H
-#define BUILTINS_H
+#ifndef BUILTINS_LEM_H
+#define BUILTINS_LEM_H
 
-#include <cmath>
+#include <cstddef>
+#include <iostream>
 
 template<typename T>
 T addition( const T& a, const T& b ) {
@@ -20,7 +21,7 @@ T product( const T& a, const T& b ) {
 
 template<typename T>
 T division( const T& a, const T& b ) {
-   return a * b;
+   return a / b;
 }
 
 template<typename T>
@@ -34,32 +35,32 @@ T minus( const T& a ) {
 }
 
 template<typename T>
-bool less( const T& a, const T& b ) {
+T less( const T& a, const T& b ) {
    return a < b;
 }
 
 template<typename T>
-bool less_equal( const T& a, const T& b ) {
+T less_equal( const T& a, const T& b ) {
    return a <= b;
 }
 
 template<typename T>
-bool greater( const T& a, const T& b ) {
+T greater( const T& a, const T& b ) {
    return a > b;
 }
 
 template<typename T>
-bool greater_equal( const T& a, const T& b ) {
+T greater_equal( const T& a, const T& b ) {
    return a >= b;
 }
 
 template<typename T>
-bool equal( const T& a, const T& b ) {
+T equal( const T& a, const T& b ) {
    return a == b;
 }
 
 template<typename T>
-bool not_equal( const T& a, const T& b ) {
+T not_equal( const T& a, const T& b ) {
    return a != b;
 }
 
@@ -68,259 +69,562 @@ T& assign( T& a, const T& b ) {
    return a = b;
 }
 
-#include <cstddef>
-#include <iostream>
-std::size_t print( ) {
+template<typename T>
+T print( ) {
    std::cout << "\n";
    return 0;
 }
 
-template<typename T, typename... Args>
-std::size_t print( const T& t, const Args&... args ) {
-   return bool( std::cout << t ) + print( args... );
+template<typename T>
+T print( const T& t ) {
+   std::cout << t << "\n";
+   return 1;
 }
 
-#include <cstddef>
-#include <iostream>
-std::size_t print_err( ) {
+template<typename T, typename... Args>
+T print( const T& t, const Args&... args ) {
+   return bool( std::cout << t << " " ) + print( args... );
+}
+
+template<typename T>
+T print_err( ) {
    std::cerr << "\n";
    return 0;
 }
 
-template<typename T, typename... Args>
-std::size_t print_err( const T& t, const Args&... args ) {
-   return bool( std::cerr << t ) + print( args... );
+template<typename T>
+T print_err( const T& t ) {
+   std::cerr << t << "\n";
+   return 1;
 }
 
-#include <cstddef>
-#include <iostream>
-long double read( ) {
-   long double res;
+template<typename T, typename... Args>
+T print_err( const T& t, const Args&... args ) {
+   return bool( std::cerr << t << " " ) + print_err<Args...>( args... );
+}
+
+template<typename T>
+T read( ) {
+   T res;
    std::cin >> res;
    return res;
 }
 
-//template<typename T, typename... Args>
-//std::size_t read( T& t, Args&... args ) {
-//   return bool(std::cin >> t) + read(args...);
-//}
-
-#endif //BUILTINS_H
-
-long double pub3_mult_0xbfe180(long double a_0xbe5340,long double b_0xbe5180);
-long double pub3_div_0xbfe1b0(long double a_0xbe56a0,long double b_0xbe57a0);
-long double pub3_plus_0xbfe1e0(long double a_0xbe5100,long double b_0xbe5400);
-long double pub3_minus_0xbfe210(long double a_0xbe5580,long double b_0x279d0);
-long double pub3_minus_0xbfe240(long double a_0xbfdd40);
-long double pub3_hashtag_0xbfe270(long double a_0xbfda60);
-long double priv3_mult_0xbfe2a0(long double a_0xbfdf20,long double b_0xbfdc60);
-long double priv3_div_0xbfe2d0(long double a_0xbfdd60,long double b_0xbfe100);
-long double priv3_plus_0xbfe300(long double a_0xbfdea0,long double b_0xbfda00);
-long double priv3_minus_0xbfe330(long double a_0xbfdce0,long double b_0xbfd9e0);
-long double priv3_minus_0xbfe360(long double a_0xbfe080);
-long double priv3_hashtag_0xbfe390(long double a_0xbfd9c0);
-
-long double pub3_mult_0xbfe180(long double a_0xbe5340,long double b_0xbe5180){
-return priv3_mult_0xbfe2a0(a_0xbe5340,b_0xbe5180);
+template<typename T>
+T read( T& t ) {
+   std::cin >> t;
+   return 1;
 }
 
-long double pub3_div_0xbfe1b0(long double a_0xbe56a0,long double b_0xbe57a0){
-return priv3_div_0xbfe2d0(a_0xbe56a0,b_0xbe57a0);
+template<typename T, typename... Args>
+T read( T& t, Args&... args ) {
+   return bool( std::cin >> t ) + read<Args...>( args... );
 }
 
-long double pub3_plus_0xbfe1e0(long double a_0xbe5100,long double b_0xbe5400){
-return priv3_plus_0xbfe300(a_0xbe5100,b_0xbe5400);
+#endif //BUILTINS_LEM_H
+
+#ifndef MATH_LEM_H
+#define MATH_LEM_H
+
+#include <cmath>
+
+//TRIGONOMETRICS
+
+template<typename T>
+T cos( const T& a ) {
+   return std::cos( a );
 }
 
-long double pub3_minus_0xbfe210(long double a_0xbe5580,long double b_0x279d0){
-return priv3_minus_0xbfe330(a_0xbe5580,b_0x279d0);
+template<typename T>
+T sin( const T& a ) {
+   return std::sin( a );
 }
 
-long double pub3_minus_0xbfe240(long double a_0xbfdd40){
-return priv3_minus_0xbfe360(a_0xbfdd40);
+template<typename T>
+T tan( const T& a ) {
+   return std::tan( a );
 }
 
-long double pub3_hashtag_0xbfe270(long double a_0xbfda60){
-return priv3_hashtag_0xbfe390(a_0xbfda60);
+template<typename T>
+T acos( const T& a ) {
+   return std::acos( a );
 }
 
-long double priv3_mult_0xbfe2a0(long double a_0xbfdf20,long double b_0xbfdc60){
-return product(a_0xbfdf20,b_0xbfdc60);
+template<typename T>
+T asin( const T& a ) {
+   return std::asin( a );
 }
 
-long double priv3_div_0xbfe2d0(long double a_0xbfdd60,long double b_0xbfe100){
-return division(a_0xbfdd60,b_0xbfe100);
+template<typename T>
+T atan( const T& a ) {
+   return std::atan( a );
 }
 
-long double priv3_plus_0xbfe300(long double a_0xbfdea0,long double b_0xbfda00){
-return addition(a_0xbfdea0,b_0xbfda00);
+//HYPERBOLICS
+
+template<typename T>
+T cosh( const T& a ) {
+   return std::cosh( a );
 }
 
-long double priv3_minus_0xbfe330(long double a_0xbfdce0,long double b_0xbfd9e0){
-return subtraction(a_0xbfdce0,b_0xbfd9e0);
+template<typename T>
+T sinh( const T& a ) {
+   return std::sinh( a );
 }
 
-long double priv3_minus_0xbfe360(long double a_0xbfe080){
-return minus(a_0xbfe080);
+template<typename T>
+T tanh( const T& a ) {
+   return std::tanh( a );
 }
 
-long double priv3_hashtag_0xbfe390(long double a_0xbfd9c0){
-return print(a_0xbfd9c0);
+template<typename T>
+T acosh( const T& a ) {
+   return std::acosh( a );
 }
 
-long double pub4_mult_0xc0dff0(long double a_0xbe5240,long double b_0xbe5280);
-long double pub4_div_0xc0e020(long double a_0xbfde80,long double b_0xbfdf00);
-long double pub4_plus_0xc0e050(long double a_0xc109d0,long double b_0xc10c70);
-long double pub4_minus_0xc0e080(long double a_0xc10bd0,long double b_0xc10c50);
-long double pub4_minus_0xc0e0b0(long double a_0xc109f0);
-long double pub4_hashtag_0xc0e0e0(long double a_0xc10b70);
-long double priv4_mult_0xc0e110(long double a_0xc10a50,long double b_0xc10cf0);
-long double priv4_div_0xc0e140(long double a_0xc13f80,long double b_0xc141c0);
-long double priv4_plus_0xc0e170(long double a_0xc13ec0,long double b_0xc144e0);
-long double priv4_minus_0xc0e1a0(long double a_0xc13f60,long double b_0xc145a0);
-long double priv4_minus_0xc0e1d0(long double a_0xc14220);
-long double priv4_hashtag_0xc0e200(long double a_0xc145e0);
-
-long double pub4_mult_0xc0dff0(long double a_0xbe5240,long double b_0xbe5280){
-return priv4_mult_0xc0e110(a_0xbe5240,b_0xbe5280);
+template<typename T>
+T asinh( const T& a ) {
+   return std::asinh( a );
 }
 
-long double pub4_div_0xc0e020(long double a_0xbfde80,long double b_0xbfdf00){
-return priv4_div_0xc0e140(a_0xbfde80,b_0xbfdf00);
+template<typename T>
+T atanh( const T& a ) {
+   return std::atanh( a );
 }
 
-long double pub4_plus_0xc0e050(long double a_0xc109d0,long double b_0xc10c70){
-return priv4_plus_0xc0e170(a_0xc109d0,b_0xc10c70);
+template<typename T>
+T atan2( const T& a, const T& b ) {
+   return std::atan2( a, b );
 }
 
-long double pub4_minus_0xc0e080(long double a_0xc10bd0,long double b_0xc10c50){
-return priv4_minus_0xc0e1a0(a_0xc10bd0,b_0xc10c50);
+//EXPONENTIALS
+
+template<typename T>
+T exp( const T& a ) {
+   return std::exp( a );
 }
 
-long double pub4_minus_0xc0e0b0(long double a_0xc109f0){
-return priv4_minus_0xc0e1d0(a_0xc109f0);
+template<typename T>
+T exp2( const T& a ) {
+   return std::exp2( a );
 }
 
-long double pub4_hashtag_0xc0e0e0(long double a_0xc10b70){
-return priv4_hashtag_0xc0e200(a_0xc10b70);
+template<typename T>
+T expm1( const T& a ) {
+   return std::expm1( a );
 }
 
-long double priv4_mult_0xc0e110(long double a_0xc10a50,long double b_0xc10cf0){
-return product(a_0xc10a50,b_0xc10cf0);
+template<typename T>
+T log( const T& a ) {
+   return std::log( a );
 }
 
-long double priv4_div_0xc0e140(long double a_0xc13f80,long double b_0xc141c0){
-return division(a_0xc13f80,b_0xc141c0);
+template<typename T>
+T log10( const T& a ) {
+   return std::log10( a );
 }
 
-long double priv4_plus_0xc0e170(long double a_0xc13ec0,long double b_0xc144e0){
-return addition(a_0xc13ec0,b_0xc144e0);
+template<typename T>
+T log2( const T& a ) {
+   return std::log2( a );
 }
 
-long double priv4_minus_0xc0e1a0(long double a_0xc13f60,long double b_0xc145a0){
-return subtraction(a_0xc13f60,b_0xc145a0);
+template<typename T>
+T log1p( const T& a ) {
+   return std::log1p( a );
 }
 
-long double priv4_minus_0xc0e1d0(long double a_0xc14220){
-return minus(a_0xc14220);
+//POWER
+
+template<typename T>
+T pow( const T& a, const T& b ) {
+   return std::pow( a, b );
 }
 
-long double priv4_hashtag_0xc0e200(long double a_0xc145e0){
-return print(a_0xc145e0);
+template<typename T>
+T sqrt( const T& a ) {
+   return std::sqrt( a );
 }
 
-long double pub2_mult_0x2bc60(long double a_0xc13fc0,long double b_0xc140e0);
-long double pub2_div_0x2bc90(long double a_0xc140a0,long double b_0xc14640);
-long double pub2_plus_0x2bcc0(long double a_0xc14020,long double b_0xc14080);
-long double pub2_minus_0x2bcf0(long double a_0xc143e0,long double b_0xc14120);
-long double pub2_minus_0x2bd20(long double a_0xc14400);
-long double pub2_hashtag_0x2bd50(long double a_0xbfdb60);
-long double priv2_mult_0x2bd80(long double a_0xbfdc80,long double b_0xbfdd00);
-long double priv2_div_0x2bdb0(long double a_0xc0e3b0,long double b_0xc0e470);
-long double priv2_plus_0x2bde0(long double a_0xc0e930,long double b_0xc0e830);
-long double priv2_minus_0x2be10(long double a_0xc0e8f0,long double b_0xc0e950);
-long double priv2_minus_0x2be40(long double a_0xc0e970);
-long double priv2_hashtag_0x2be70(long double a_0xc0eab0);
-
-long double pub2_mult_0x2bc60(long double a_0xc13fc0,long double b_0xc140e0){
-return priv2_mult_0x2bd80(a_0xc13fc0,b_0xc140e0);
+template<typename T>
+T cbrt( const T& a ) {
+   return std::cbrt( a );
 }
 
-long double pub2_div_0x2bc90(long double a_0xc140a0,long double b_0xc14640){
-return priv2_div_0x2bdb0(a_0xc140a0,b_0xc14640);
+template<typename T>
+T hypot( const T& a, const T& b ) {
+   return std::hypot( a, b );
 }
 
-long double pub2_plus_0x2bcc0(long double a_0xc14020,long double b_0xc14080){
-return priv2_plus_0x2bde0(a_0xc14020,b_0xc14080);
+template<typename T>
+T hypot( const T& a, const T& b, const T& c ) {
+   return std::hypot( a, b, c );
 }
 
-long double pub2_minus_0x2bcf0(long double a_0xc143e0,long double b_0xc14120){
-return priv2_minus_0x2be10(a_0xc143e0,b_0xc14120);
+//FLOATATING POINT MANIPULATION
+
+template<typename T>
+T ldexp( const T& a, const T& b ) {
+   return std::ldexp( a, b );
 }
 
-long double pub2_minus_0x2bd20(long double a_0xc14400){
-return priv2_minus_0x2be40(a_0xc14400);
+template<typename T>
+T frexp( const T& a, T& b ) {
+   int temp;
+   T res = std::ldexp( a, &temp );
+   b = temp;
+   return res;
 }
 
-long double pub2_hashtag_0x2bd50(long double a_0xbfdb60){
-return priv2_hashtag_0x2be70(a_0xbfdb60);
+template<typename T>
+T modf( const T& a, T& b ) {
+   return std::modf( a, &b );
 }
 
-long double priv2_mult_0x2bd80(long double a_0xbfdc80,long double b_0xbfdd00){
-return product(a_0xbfdc80,b_0xbfdd00);
+template<typename T>
+T nextafter( const T& a, const T& b ) {
+   return std::nextafter( a, b );
 }
 
-long double priv2_div_0x2bdb0(long double a_0xc0e3b0,long double b_0xc0e470){
-return division(a_0xc0e3b0,b_0xc0e470);
+template<typename T>
+T nexttoward( const T& a, const T& b ) {
+   return std::nexttoward( a, b );
 }
 
-long double priv2_plus_0x2bde0(long double a_0xc0e930,long double b_0xc0e830){
-return addition(a_0xc0e930,b_0xc0e830);
+template<typename T>
+T copysign( const T& a, const T& b ) {
+   return std::copysign( a, b );
 }
 
-long double priv2_minus_0x2be10(long double a_0xc0e8f0,long double b_0xc0e950){
-return subtraction(a_0xc0e8f0,b_0xc0e950);
+//ERROR AND GAMMA
+
+template<typename T>
+T erf( const T& a ) {
+   return std::erf( a );
 }
 
-long double priv2_minus_0x2be40(long double a_0xc0e970){
-return minus(a_0xc0e970);
+template<typename T>
+T erfc( const T& a ) {
+   return std::erfc( a );
 }
 
-long double priv2_hashtag_0x2be70(long double a_0xc0eab0){
-return print(a_0xc0eab0);
+template<typename T>
+T tgamma( const T& a ) {
+   return std::tgamma( a );
 }
 
-long double factorial_0xbfceb0(long double n_0xc0e5b0);
-long double main_0xbfcee0();
+template<typename T>
+T lgamma( const T& a ) {
+   return std::lgamma( a );
+}
 
-long double factorial_0xbfceb0(long double n_0xc0e5b0){
-if (less_equal(n_0xc0e5b0, static_cast<long double>(0L))){
-return static_cast<long double>(1L);
+//NEARES INTEGER FLOATING
+
+template<typename T>
+T ceil( const T& a ) {
+   return std::ceil( a );
+}
+
+template<typename T>
+T floor( const T& a ) {
+   return std::floor( a );
+}
+
+template<typename T>
+T trunc( const T& a ) {
+   return std::trunc( a );
+}
+
+template<typename T>
+T round( const T& a ) {
+   return std::round( a );
+}
+
+//BASIC
+
+template<typename T>
+T abs( const T& a ) {
+   return std::fabs( a );
+}
+
+template<typename T>
+T mod( const T& a, const T& b ) {
+   return std::fmod( a, b );
+}
+
+template<typename T>
+T ma( const T& a, const T& b, const T& c ) {
+   return std::fma( a, b, c );
+}
+
+template<typename T>
+T min( const T& a, const T& b ) {
+   return std::fmin( a, b );
+}
+
+template<typename T>
+T max( const T& a, const T& b ) {
+   return std::fmax( a, b );
+}
+
+template<typename T>
+T dim( const T& a, const T& b ) {
+   return std::fdim( a, b );
+}
+
+template<typename T>
+T remainder( const T& a, const T& b ) {
+   return std::remainder( a, b );
+}
+
+//CLASSIFICATION COMPARATION
+
+template<typename T>
+T isfinite( const T& a ) {
+   return std::isfinite( a );
+}
+
+template<typename T>
+T isinf( const T& a ) {
+   return std::isinf( a );
+}
+
+template<typename T>
+T isnan( const T& a ) {
+   return std::isnan( a );
+}
+
+template<typename T>
+T isnorma( const T& a ) {
+   return std::isnormal( a );
+}
+
+template<typename T>
+T signbit( const T& a ) {
+   return std::signbit( a );
+}
+
+template<typename T>
+T isunordered( const T& a ) {
+   return std::isunordered( a );
+}
+
+#endif //MATH_LEM
+
+long double pub3_mult_0xc568c0(long double a_0x8eee80,long double b_0x8ee9c0);
+long double pub3_div_0xc568f0(long double a_0x8eee20,long double b_0x8eeea0);
+long double pub3_plus_0xc56920(long double a_0x8ee800,long double b_0x8ee820);
+long double pub3_minus_0xc56950(long double a_0x8ee940,long double b_0x8ee960);
+long double pub3_minus_0xc56980(long double a_0xc404c0);
+long double pub3_hashtag_0xc569b0(long double a_0xc40700);
+long double priv3_mult_0xc569e0(long double a_0xc40560,long double b_0xc404e0);
+long double priv3_div_0xc56a10(long double a_0xc40460,long double b_0xc405a0);
+long double priv3_plus_0xc56a40(long double a_0xc40780,long double b_0xc401a0);
+long double priv3_minus_0xc56a70(long double a_0xc40260,long double b_0xc407e0);
+long double priv3_minus_0xc56aa0(long double a_0xc40840);
+long double priv3_hashtag_0xc56ad0(long double a_0xc40880);
+
+long double pub3_mult_0xc568c0(long double a_0x8eee80,long double b_0x8ee9c0){
+return priv3_mult_0xc569e0(a_0x8eee80,b_0x8ee9c0);
+}
+
+long double pub3_div_0xc568f0(long double a_0x8eee20,long double b_0x8eeea0){
+return priv3_div_0xc56a10(a_0x8eee20,b_0x8eeea0);
+}
+
+long double pub3_plus_0xc56920(long double a_0x8ee800,long double b_0x8ee820){
+return priv3_plus_0xc56a40(a_0x8ee800,b_0x8ee820);
+}
+
+long double pub3_minus_0xc56950(long double a_0x8ee940,long double b_0x8ee960){
+return priv3_minus_0xc56a70(a_0x8ee940,b_0x8ee960);
+}
+
+long double pub3_minus_0xc56980(long double a_0xc404c0){
+return priv3_minus_0xc56aa0(a_0xc404c0);
+}
+
+long double pub3_hashtag_0xc569b0(long double a_0xc40700){
+return priv3_hashtag_0xc56ad0(a_0xc40700);
+}
+
+long double priv3_mult_0xc569e0(long double a_0xc40560,long double b_0xc404e0){
+return product<long double>(a_0xc40560,b_0xc404e0);
+}
+
+long double priv3_div_0xc56a10(long double a_0xc40460,long double b_0xc405a0){
+return division<long double>(a_0xc40460,b_0xc405a0);
+}
+
+long double priv3_plus_0xc56a40(long double a_0xc40780,long double b_0xc401a0){
+return addition<long double>(a_0xc40780,b_0xc401a0);
+}
+
+long double priv3_minus_0xc56a70(long double a_0xc40260,long double b_0xc407e0){
+return subtraction<long double>(a_0xc40260,b_0xc407e0);
+}
+
+long double priv3_minus_0xc56aa0(long double a_0xc40840){
+return minus<long double>(a_0xc40840);
+}
+
+long double priv3_hashtag_0xc56ad0(long double a_0xc40880){
+return print<long double>(a_0xc40880);
+}
+
+long double pub4_mult_0xc5f1a0(long double a_0x8eed60,long double b_0x8eea00);
+long double pub4_div_0xc5f1d0(long double a_0x8eeee0,long double b_0xc40420);
+long double pub4_plus_0xc5f200(long double a_0xc62600,long double b_0xc624e0);
+long double pub4_minus_0xc5f230(long double a_0xc62580,long double b_0xc625a0);
+long double pub4_minus_0xc5f260(long double a_0xc626a0);
+long double pub4_hashtag_0xc5f290(long double a_0xc62380);
+long double priv4_mult_0xc5f2c0(long double a_0xc62400,long double b_0xc62420);
+long double priv4_div_0xc5f2f0(long double a_0xc5ee00,long double b_0xc5ea80);
+long double priv4_plus_0xc5f320(long double a_0xc5ef00,long double b_0xc5eb20);
+long double priv4_minus_0xc5f350(long double a_0xc5eea0,long double b_0xc5eb00);
+long double priv4_minus_0xc5f380(long double a_0xc5eca0);
+long double priv4_hashtag_0xc5f3b0(long double a_0xc5ec00);
+
+long double pub4_mult_0xc5f1a0(long double a_0x8eed60,long double b_0x8eea00){
+return priv4_mult_0xc5f2c0(a_0x8eed60,b_0x8eea00);
+}
+
+long double pub4_div_0xc5f1d0(long double a_0x8eeee0,long double b_0xc40420){
+return priv4_div_0xc5f2f0(a_0x8eeee0,b_0xc40420);
+}
+
+long double pub4_plus_0xc5f200(long double a_0xc62600,long double b_0xc624e0){
+return priv4_plus_0xc5f320(a_0xc62600,b_0xc624e0);
+}
+
+long double pub4_minus_0xc5f230(long double a_0xc62580,long double b_0xc625a0){
+return priv4_minus_0xc5f350(a_0xc62580,b_0xc625a0);
+}
+
+long double pub4_minus_0xc5f260(long double a_0xc626a0){
+return priv4_minus_0xc5f380(a_0xc626a0);
+}
+
+long double pub4_hashtag_0xc5f290(long double a_0xc62380){
+return priv4_hashtag_0xc5f3b0(a_0xc62380);
+}
+
+long double priv4_mult_0xc5f2c0(long double a_0xc62400,long double b_0xc62420){
+return product<long double>(a_0xc62400,b_0xc62420);
+}
+
+long double priv4_div_0xc5f2f0(long double a_0xc5ee00,long double b_0xc5ea80){
+return division<long double>(a_0xc5ee00,b_0xc5ea80);
+}
+
+long double priv4_plus_0xc5f320(long double a_0xc5ef00,long double b_0xc5eb20){
+return addition<long double>(a_0xc5ef00,b_0xc5eb20);
+}
+
+long double priv4_minus_0xc5f350(long double a_0xc5eea0,long double b_0xc5eb00){
+return subtraction<long double>(a_0xc5eea0,b_0xc5eb00);
+}
+
+long double priv4_minus_0xc5f380(long double a_0xc5eca0){
+return minus<long double>(a_0xc5eca0);
+}
+
+long double priv4_hashtag_0xc5f3b0(long double a_0xc5ec00){
+return print<long double>(a_0xc5ec00);
+}
+
+long double pub2_mult_0xc61ef0(long double a_0xc5ec80,long double b_0xc5eee0);
+long double pub2_div_0xc61f20(long double a_0xc5ed60,long double b_0xc5efa0);
+long double pub2_plus_0xc61f50(long double a_0xc5f120,long double b_0xc5eb40);
+long double pub2_minus_0xc61f80(long double a_0xc5f0a0,long double b_0xc5ecc0);
+long double pub2_minus_0xc61fb0(long double a_0xc5ece0);
+long double pub2_hashtag_0xc61fe0(long double a_0xc5ede0);
+long double priv2_mult_0xc62010(long double a_0xc401e0,long double b_0xc40200);
+long double priv2_div_0xc62040(long double a_0xc61830,long double b_0xc61cb0);
+long double priv2_plus_0xc62070(long double a_0xc61e30,long double b_0xc61a50);
+long double priv2_minus_0xc620a0(long double a_0xc61a90,long double b_0xc61c30);
+long double priv2_minus_0xc620d0(long double a_0xc61870);
+long double priv2_hashtag_0xc62100(long double a_0xc61970);
+
+long double pub2_mult_0xc61ef0(long double a_0xc5ec80,long double b_0xc5eee0){
+return priv2_mult_0xc62010(a_0xc5ec80,b_0xc5eee0);
+}
+
+long double pub2_div_0xc61f20(long double a_0xc5ed60,long double b_0xc5efa0){
+return priv2_div_0xc62040(a_0xc5ed60,b_0xc5efa0);
+}
+
+long double pub2_plus_0xc61f50(long double a_0xc5f120,long double b_0xc5eb40){
+return priv2_plus_0xc62070(a_0xc5f120,b_0xc5eb40);
+}
+
+long double pub2_minus_0xc61f80(long double a_0xc5f0a0,long double b_0xc5ecc0){
+return priv2_minus_0xc620a0(a_0xc5f0a0,b_0xc5ecc0);
+}
+
+long double pub2_minus_0xc61fb0(long double a_0xc5ece0){
+return priv2_minus_0xc620d0(a_0xc5ece0);
+}
+
+long double pub2_hashtag_0xc61fe0(long double a_0xc5ede0){
+return priv2_hashtag_0xc62100(a_0xc5ede0);
+}
+
+long double priv2_mult_0xc62010(long double a_0xc401e0,long double b_0xc40200){
+return product<long double>(a_0xc401e0,b_0xc40200);
+}
+
+long double priv2_div_0xc62040(long double a_0xc61830,long double b_0xc61cb0){
+return division<long double>(a_0xc61830,b_0xc61cb0);
+}
+
+long double priv2_plus_0xc62070(long double a_0xc61e30,long double b_0xc61a50){
+return addition<long double>(a_0xc61e30,b_0xc61a50);
+}
+
+long double priv2_minus_0xc620a0(long double a_0xc61a90,long double b_0xc61c30){
+return subtraction<long double>(a_0xc61a90,b_0xc61c30);
+}
+
+long double priv2_minus_0xc620d0(long double a_0xc61870){
+return minus<long double>(a_0xc61870);
+}
+
+long double priv2_hashtag_0xc62100(long double a_0xc61970){
+return print<long double>(a_0xc61970);
+}
+
+long double factorial_0xc53dd0(long double n_0xc618b0);
+long double main_0xc53e00();
+
+long double factorial_0xc53dd0(long double n_0xc618b0){
+if (less_equal<long double>(n_0xc618b0, static_cast<long double>(0))){
+return static_cast<long double>(1);
 }
 else {
-return pub2_mult_0x2bc60(n_0xc0e5b0, factorial_0xbfceb0(pub2_minus_0x2bcf0(n_0xc0e5b0, static_cast<long double>(1L))));
+return pub2_mult_0xc61ef0(n_0xc618b0, factorial_0xc53dd0(pub2_minus_0xc61f80(n_0xc618b0, static_cast<long double>(1))));
 }
-return static_cast<long double>(0L);
+return static_cast<long double>(0);
 }
 
-long double main_0xbfcee0(){
-long double a_0xc0e870 = static_cast<long double>(0L);
-long double b_0xc0e8d0 = static_cast<long double>(0L);
-print(factorial_0xbfceb0(static_cast<long double>(5L)));
-pub2_mult_0x2bc60(a_0xc0e870, b_0xc0e8d0);
-pub2_div_0x2bc90(a_0xc0e870, b_0xc0e8d0);
-pub2_minus_0x2bcf0(a_0xc0e870, b_0xc0e8d0);
-pub2_plus_0x2bcc0(a_0xc0e870,b_0xc0e8d0);
-pub4_plus_0xc0e050(a_0xc0e870,b_0xc0e8d0);
-pub2_plus_0x2bcc0(a_0xc0e870, b_0xc0e8d0);
-pub4_hashtag_0xc0e0e0(a_0xc0e870);
-long double c_0xbe5720 = read();
-print(pub2_plus_0x2bcc0(a_0xc0e870, static_cast<long double>(2L)));
-print(pub2_plus_0x2bcc0(b_0xc0e8d0, static_cast<long double>(1L)));
-print(c_0xbe5720);
-return static_cast<long double>(0L);
+long double main_0xc53e00(){
+long double a_0xc61d90 = static_cast<long double>(0);
+long double b_0xc61e70 = static_cast<long double>(0);
+print<long double>(factorial_0xc53dd0(static_cast<long double>(5)));
+pub2_mult_0xc61ef0(a_0xc61d90, b_0xc61e70);
+pub2_div_0xc61f20(a_0xc61d90, b_0xc61e70);
+pub2_minus_0xc61f80(a_0xc61d90, b_0xc61e70);
+pub2_plus_0xc61f50(a_0xc61d90,b_0xc61e70);
+pub4_plus_0xc5f200(a_0xc61d90,b_0xc61e70);
+pub2_plus_0xc61f50(a_0xc61d90, b_0xc61e70);
+pub4_hashtag_0xc5f290(a_0xc61d90);
+long double c_0x8eea20 = read<long double>();
+print<long double>(pub2_plus_0xc61f50(a_0xc61d90, static_cast<long double>(2)));
+print<long double>(pub2_plus_0xc61f50(b_0xc61e70, static_cast<long double>(1)));
+print<long double>(c_0x8eea20);
+return static_cast<long double>(0);
 }
 
 int main( ) {
-main_0xbfcee0( );
+main_0xc53e00( );
 }

@@ -187,10 +187,10 @@ try {
       }
    }
    else if( !std::filesystem::is_regular_file( destiny_path ) ) {
-      std::cout << "Error: Destiny file is not a regular file\n."
+      std::cout << "Error: Destiny file is not a regular file\n.";
       return 0;
    }
-   std::ofstream ofs( compiled_path.c_str( ) );
+   std::ofstream ofs( destiny_path.c_str( ) );
    ofs << std::move( oss ).str( );
 } catch( std::stack<compiler_error>& sce ) {
    while( !sce.empty( ) ) {
