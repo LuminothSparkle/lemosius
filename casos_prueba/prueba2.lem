@@ -8,13 +8,13 @@ public  operator -  infix (left 9) as pub2_minus;
 public  operator -  prefix         as pub2_minus;
 public  operator #  suffix         as pub2_hashtag;
 
-public  operator **  infix (left 9) as pub2_mult;
-public  operator *** infix (left 9) as pub2_mult;
+public  operator **  infix (left 9) as pub2_div;
+public  operator *** infix (left 9) as pub2_minus;
 
 public  operator != infix (left 9) as pub2_plus;
 ##<public  operator == infix (left 9) as priv2_plus;   ##<Definicion privada
-private operator <= infix (left 9) as pub2_plus;
-private operator >= infix (left 9) as priv2_plus;
+private operator < infix (left 9) as pub2_plus;
+private operator > infix (left 9) as priv2_plus;
 
 
 public proc pub2_mult(var a,var b) {

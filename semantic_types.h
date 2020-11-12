@@ -27,7 +27,8 @@ struct visible_function {
 
 using operator_overload_set = std::map<token_type,  visible_operator>;
 using function_overload_set = std::map<std::size_t, visible_function>;
-using builtin_overload_set  = std::set<std::size_t>;                   //Yo creo que si hay necesidad de saber de esta interface para el programador
+using builtin_overload_set  = std::set<std::size_t>;
+//Yo creo que si hay necesidad de saber de esta interface para el programador
 //ya que realmente usamos su tipo en el analisis del programa, y hace claro el codigo sin tanto decltype y program_resources::
 //Además tu mismo dijiste que realmente no habrá colisiones con nombres, así que no veo necesidad de hacerlo
 
@@ -43,24 +44,15 @@ struct program_resources {
    std::vector<inclusion> inclusions;
    std::unordered_map<std::string_view, operator_overload_set> operator_overloads;
    std::unordered_map<std::string_view, function_overload_set> function_overloads;
-   std::unordered_map<std::string_view, builtin_overload_set> builtin_overloads = {
-      { "addition",      { 2 } },
-      { "subtraction",   { 2 } },
-      { "product",       { 2 } },
-      { "division",      { 2 } },
-      { "plus",          { 1 } },
-      { "minus",         { 1 } },
-      { "less",          { 2 } },
-      { "less_equal",    { 2 } },
-      { "greater",       { 2 } },
-      { "greater_equal", { 2 } },
-      { "equal",         { 2 } },
-      { "not_equal",     { 2 } },
-      { "assign",        { 2 } },
-      { "print",         { 1 } }, //print          de un operando          // ni modo, el lenguaje por ahoraes de juguete
-      { "print_err",     { 1 } },
-      { "read",          { 0 } }, //read           ¿de cero operandos?     // var a = read( );         como el lenguaje no tiene paso por referencia, sería lo más consistente
-   };
+   std::unordered_map<std::string_view, builtin_overload_set> builtin_overloads;
+
+   program_resources(const auto& builtin_decls) {
+      for(const auto&[name,overloads] : builtin_decls) {
+         for(const auto& arity : overloads) {
+            builtin_overloads[name].insert(arity);
+         }
+      }
+   }
 
    auto get_operator_views( ) const {
       std::vector<std::string_view> res;
@@ -180,6 +172,11 @@ struct resolution_table {
    std::unordered_map<std::string_view, std::map<token_type, const function_declaration*>> operator_lookup;
    std::unordered_map<const terminal_expression*, const var_statement*>                    variable_lookup;
    std::unordered_map<const call_expression*, const function_declaration*>                 function_lookup;
+};
+
+enum VALUE_TYPE {
+   RVALUE = 0,
+   LVALUE,
 };
 
 #endif //SEMANTIC_TYPES_H

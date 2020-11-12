@@ -19,13 +19,17 @@ std::string get_builtin_name( const std::string_view& name ) {
    return std::string( name );
 }
 
+std::string get_builtin_invoke( const std::string_view& name ) {
+   return get_builtin_name( name ) + "<long double>";
+}
+
 template<typename T>
 std::string get_identifier_declaration( const T& t ) {
    return "long double " + get_identifier_name( t );
 }
 
 std::string get_literal_constant( const std::string_view& sv ) {
-   return std::string( sv ) + "L";
+   return "static_cast<long double>(" + std::string( sv ) + ")";
 }
 
 void write_expression( const expression&, const resolution_table&, std::ostream& );
@@ -42,7 +46,7 @@ void write_expression( const prefix_expression& e, const resolution_table& tbl, 
    if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( PREFIX_K ) ) {
       os << get_identifier_name( *func_decl );
    } else {
-      os << get_builtin_name( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( PREFIX_K ).declaration->function );
+      os << get_builtin_invoke( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( PREFIX_K ).declaration->function );
    }
    os << "(";
    write_expression( *e.exp, tbl, os );
@@ -50,10 +54,10 @@ void write_expression( const prefix_expression& e, const resolution_table& tbl, 
 }
 
 void write_expression( const suffix_expression& e, const resolution_table& tbl, std::ostream& os ) {
-   if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( SUFFIX_K ) ) {
+   if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( SUFFIX_K ); func_decl != nullptr ) {
       os << get_identifier_name( *func_decl );
    } else {
-      os << get_builtin_name( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( SUFFIX_K ).declaration->function );
+      os << get_builtin_invoke( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( SUFFIX_K ).declaration->function );
    }
    os << "(";
    write_expression( *e.exp, tbl, os );
@@ -61,10 +65,13 @@ void write_expression( const suffix_expression& e, const resolution_table& tbl, 
 }
 
 void write_expression( const binary_expression& e, const resolution_table& tbl, std::ostream& os ) {
-   if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( INFIX_K ) ) {
+   if( *e.op == ASSIGNMENT_O ) {
+      os << get_builtin_invoke( "assign" );
+   }
+   else if( auto func_decl = tbl.operator_lookup.at( std::string_view( *e.op ) ).at( INFIX_K ); func_decl != nullptr ) {
       os << get_identifier_name( *func_decl );
    } else {
-      os << get_builtin_name( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( INFIX_K ).declaration->function );
+      os << get_builtin_invoke( *tbl.operator_overloads.at( std::string_view( *e.op ) ).at( INFIX_K ).declaration->function );
    }
    os << "(";
    write_expression( *e.exp1, tbl, os );
@@ -74,10 +81,10 @@ void write_expression( const binary_expression& e, const resolution_table& tbl, 
 }
 
 void write_expression( const call_expression& e, const resolution_table& tbl, std::ostream& os ) {
-   if( auto func_decl = tbl.function_lookup.at( &e ) ) {
+   if( auto func_decl = tbl.function_lookup.at( &e ); func_decl != nullptr ) {
       os << get_identifier_name( *func_decl );
    } else {
-      os << get_builtin_name( *e.function_name );
+      os << get_builtin_invoke( *e.function_name );
    }
    os << "(";
    for( std::size_t i = 0; i < e.params.size( ); ++i ) {

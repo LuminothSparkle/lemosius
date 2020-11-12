@@ -1,0 +1,95 @@
+public  operator %   infix (left 4)  as mod;
+public  operator ^   infix (right 3) as pow;
+public  operator **  infix (right 3) as pow;
+public  operator -/  prefix          as sqrt;
+public  operator *   infix (left 4)  as product;
+public  operator +   infix (left 5)  as addition;
+public  operator -   infix (left 5)  as subtraction;
+public  operator -   prefix          as minus;
+public  operator +   prefix          as plus;
+public  operator ==  infix (left 2)  as equal;
+public  operator !=  infix (left 2)  as not_equal;
+public  operator <=  infix (left 2)  as less_equal;
+
+public  operator /   infix (left 4)  as division;
+public  operator \   infix (right 4) as inv_division;
+public  operator \\  infix (right 4) as inv_int_division;
+public  operator //  infix (left 4)  as integer_division;
+
+public  operator -|  prefix          as logic_not;
+public  operator ->  infix (left 1)  as implies;
+public  operator <-> infix (left 1)  as biconditional;
+public  operator &   infix (left 1)  as logic_and;
+public  operator |   infix (left 0)  as logic_or;
+##<public  operator %   suffix          as percentage;
+public  operator !   suffix          as factorial;
+
+public proc factorial(var a) {
+   if(a <= 0) {
+      return 1;
+   }
+   return a * (a - 1)!;
+}
+
+public proc inv_division(var a, var b) {
+   return b / a;
+}
+
+public proc inv_int_division(var a, var b) {
+   return floor(b / a);
+}
+
+public proc integer_division(var a, var b) {
+   return floor(a / b);
+}
+
+public proc implies(var a, var b) {
+   return b != 0 | a == 0 & b == 0;
+}
+
+public proc biconditional(var a, var b) {
+   return a != 0 & b != 0 | a == 0 & b == 0;
+}
+
+public proc logic_not(var a) {
+   return a != 0;
+}
+
+public proc logic_and(var a, var b) {
+   return (a != 0) * (b != 0);
+}
+
+public proc logic_or(var a, var b) {
+   return (a != 0) + (b != 0) != 0;
+}
+
+public proc percentage(var a) {
+   return a / 100;
+}
+
+
+public proc gcd(var a, var b) {
+    if(b == 0) {
+      return a;
+    }
+    a := a % b;
+    return gcd(b,a);
+}
+
+public proc mcd(var a, var b) {
+   return a / gcd(a,b) * b;
+}
+
+proc main() {
+   var a;
+   var b;
+   var c;
+   read(a,b);
+   read(c);
+   ##<(a + b) := 7;
+   ##<print(gcd(a,b));
+   ##<var c;
+   ##<c := mcd(a,b);
+   ##<print(c);
+   print(a | b & c);
+}

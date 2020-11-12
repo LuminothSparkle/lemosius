@@ -1,5 +1,8 @@
-#ifndef BUILTINS_H
-#define BUILTINS_H
+#ifndef BUILTINS_LEM_H
+#define BUILTINS_LEM_H
+
+#include <cstddef>
+#include <iostream>
 
 template<typename T>
 T addition( const T& a, const T& b ) {
@@ -18,7 +21,7 @@ T product( const T& a, const T& b ) {
 
 template<typename T>
 T division( const T& a, const T& b ) {
-   return a * b;
+   return a / b;
 }
 
 template<typename T>
@@ -32,32 +35,32 @@ T minus( const T& a ) {
 }
 
 template<typename T>
-bool less( const T& a, const T& b ) {
+T less( const T& a, const T& b ) {
    return a < b;
 }
 
 template<typename T>
-bool less_equal( const T& a, const T& b ) {
+T less_equal( const T& a, const T& b ) {
    return a <= b;
 }
 
 template<typename T>
-bool greater( const T& a, const T& b ) {
+T greater( const T& a, const T& b ) {
    return a > b;
 }
 
 template<typename T>
-bool greater_equal( const T& a, const T& b ) {
+T greater_equal( const T& a, const T& b ) {
    return a >= b;
 }
 
 template<typename T>
-bool equal( const T& a, const T& b ) {
+T equal( const T& a, const T& b ) {
    return a == b;
 }
 
 template<typename T>
-bool not_equal( const T& a, const T& b ) {
+T not_equal( const T& a, const T& b ) {
    return a != b;
 }
 
@@ -66,41 +69,56 @@ T& assign( T& a, const T& b ) {
    return a = b;
 }
 
-#include <cstddef>
-#include <iostream>
-std::size_t print( ) {
+template<typename T>
+T print( ) {
    std::cout << "\n";
    return 0;
 }
 
-template<typename T, typename... Args>
-std::size_t print( const T& t, const Args&... args ) {
-   return bool( std::cout << t ) + print( args... );
+template<typename T>
+T print( const T& t ) {
+   std::cout << t << "\n";
+   return 1;
 }
 
-#include <cstddef>
-#include <iostream>
-std::size_t print_err( ) {
+template<typename T, typename... Args>
+T print( const T& t, const Args&... args ) {
+   return bool( std::cout << t << " " ) + print( args... );
+}
+
+template<typename T>
+T print_err( ) {
    std::cerr << "\n";
    return 0;
 }
 
-template<typename T, typename... Args>
-std::size_t print_err( const T& t, const Args&... args ) {
-   return bool( std::cerr << t ) + print( args... );
+template<typename T>
+T print_err( const T& t ) {
+   std::cerr << t << "\n";
+   return 1;
 }
 
-#include <cstddef>
-#include <iostream>
-long double read( ) {
-   long double res;
+template<typename T, typename... Args>
+T print_err( const T& t, const Args&... args ) {
+   return bool( std::cerr << t << " " ) + print_err<Args...>( args... );
+}
+
+template<typename T>
+T read( ) {
+   T res;
    std::cin >> res;
    return res;
 }
 
-//template<typename T, typename... Args>
-//std::size_t read( T& t, Args&... args ) {
-//   return bool(std::cin >> t) + read(args...);
-//}
+template<typename T>
+T read( T& t ) {
+   std::cin >> t;
+   return 1;
+}
 
-#endif //BUILTINS_H
+template<typename T, typename... Args>
+T read( T& t, Args&... args ) {
+   return bool( std::cin >> t ) + read<Args...>( args... );
+}
+
+#endif //BUILTINS_LEM_H

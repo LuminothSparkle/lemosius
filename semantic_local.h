@@ -6,32 +6,40 @@
 
 #include <string>
 
-void analyze_expression( const expression&, scope_stack&, resolution_table& );
+VALUE_TYPE analyze_expression( const expression&, scope_stack&, resolution_table& );
 
-void analyze_expression( const terminal_expression& e, scope_stack& ss, resolution_table& tbl ) {
+VALUE_TYPE analyze_expression( const terminal_expression& e, scope_stack& ss, resolution_table& tbl ) {
    if( *e.tok_ptr == IDENTIFIER_L ) {
       if( auto var_decl = ss.find_symbol( *e.tok_ptr ).get_variable( ); var_decl != nullptr ) {
          tbl.variable_lookup.emplace( &e, var_decl );
       } else {
          throw std::pair<token, std::string>( *e.tok_ptr, "Variable not declared." );
       }
+      return LVALUE;
    }
+   return RVALUE;
 }
 
-void analyze_expression( const prefix_expression& e, scope_stack& ss, resolution_table& tbl ) {
+VALUE_TYPE analyze_expression( const prefix_expression& e, scope_stack& ss, resolution_table& tbl ) {
    analyze_expression( *e.exp, ss, tbl );
+   return RVALUE;
 }
 
-void analyze_expression( const suffix_expression& e, scope_stack& ss, resolution_table& tbl ) {
+VALUE_TYPE analyze_expression( const suffix_expression& e, scope_stack& ss, resolution_table& tbl ) {
    analyze_expression( *e.exp, ss, tbl );
+   return RVALUE;
 }
 
-void analyze_expression( const binary_expression& e, scope_stack& ss, resolution_table& tbl ) {
-   analyze_expression( *e.exp1, ss, tbl );
+VALUE_TYPE analyze_expression( const binary_expression& e, scope_stack& ss, resolution_table& tbl ) {
+   auto ltype = analyze_expression( *e.exp1, ss, tbl );
+   if(ltype == RVALUE && *e.op == ASSIGNMENT_O) {
+      throw std::pair<token, std::string>( *e.op, "Trying to assign a rvalue.");
+   }
    analyze_expression( *e.exp2, ss, tbl );
+   return RVALUE;
 }
 
-void analyze_expression( const call_expression& e, scope_stack& ss, resolution_table& tbl ) {
+VALUE_TYPE analyze_expression( const call_expression& e, scope_stack& ss, resolution_table& tbl ) {
    auto sym = ss.find_symbol( *e.function_name );
    if( auto var = sym.get_variable( ); var != nullptr ) {
       throw std::vector<std::pair<token, std::string>>( {
@@ -52,9 +60,10 @@ void analyze_expression( const call_expression& e, scope_stack& ss, resolution_t
    for( const auto& param : e.params ) {
       analyze_expression( *param, ss, tbl );
    }
+   return RVALUE;
 }
 
-void analyze_expression( const expression& e, scope_stack& ss, resolution_table& tbl ) {       // sí, if else if !
+VALUE_TYPE analyze_expression( const expression& e, scope_stack& ss, resolution_table& tbl ) {       // sí, if else if !
    if( typeid( e ) == typeid( terminal_expression ) ) {
       return analyze_expression( dynamic_cast<const terminal_expression&>( e ), ss, tbl );
    } else if( typeid( e ) == typeid( prefix_expression ) ) {
@@ -66,6 +75,7 @@ void analyze_expression( const expression& e, scope_stack& ss, resolution_table&
    } else if( typeid( e ) == typeid( call_expression ) ) {
       return analyze_expression( dynamic_cast<const call_expression&>( e ),     ss, tbl );
    }
+   return RVALUE;
 }
 
 void analyze_statement( const statement&, scope_stack&, resolution_table& );

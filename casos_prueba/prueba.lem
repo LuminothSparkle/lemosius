@@ -18,15 +18,28 @@ include "prueba2.lem";
 ##<operator infix (left -1) as;                       ##<Error sintactico
 ##<operator -* infix (left 0) as pub2_minus           ##<Error sintactico
 
+operator <= infix (left 0) as less_equal;
+
 ###<No puede sobrecargarse de nuevo>##
-private proc pub2_mult(a,b) {
+private proc pub2_mult(var a, var b) {
     return a * b;
 }
 ###<>###
 
+proc factorial(var n) {
+   if(n <= 0) {
+      return 1;
+   }
+   else {
+      return n * factorial(n - 1);
+   }
+}
+
 proc main() {
     var a := 0;
     var b := 0;
+    
+    print(factorial(5));
     
     ##<c;               ##<Utilización variable que no existe
     ##<var b;           ##<Redeclaración de variable
@@ -34,8 +47,8 @@ proc main() {
     ##<pub2_plus(a);    ##<Utilización una sobrecarga que no existe
     ##<addition(a);     ##<Utilización una builtin que no existe
     a * b;              ##<Utiliza operador * de prueba2.lem
-    ##<a ** b;
-    ##<a *** b;
+    a ** b;
+    a *** b;
 
     ##<Utilización de funciones de prueba2.lem
 
@@ -56,8 +69,8 @@ proc main() {
 
     a!=b;               ##<Declaracion publica definicion publica.
     ##<a==b;            ##<Declaracion publica definicion privada.
-    ##<a<=b;            ##<Declaracion privada definicion publica
-    ##<a>=b;            ##<Declaracion privada definicion privada
+    ##<a<b;            ##<Declaracion privada definicion publica
+    ##<a>b;            ##<Declaracion privada definicion privada
 
     ##<Utilización de operadores de inclusion privada prueba3.lem en prueba2.lem
 
@@ -73,6 +86,8 @@ proc main() {
     ##<a'';             ##<Declaracion privada definicion publica
     ##<a||;             ##<Declaracion privada definicion privada
     
+    var c := read( );
     print(a + 2);
     print(b + 1);
+    print(c);
 }

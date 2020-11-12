@@ -66,12 +66,12 @@ struct compiler_error {     // cada vez que se eleva un error que es capturado e
    std::string what;
 };
 
-std::optional<program_resources> compile_file( std::filesystem::path path, map_path_source& compiled, bool is_main, std::ostream& os )
+std::optional<program_resources> compile_file( std::filesystem::path path, const auto& builtin_overloads, map_path_source& compiled, bool is_main, std::ostream& os )
 try {
    if( path = std::filesystem::absolute( path ); compiled.contains( path ) ) {
       return {};
    }
-   program_resources pr;
+   program_resources pr(builtin_overloads);
    pr.source_path = path;
    pr.source_file = read_file( path );
    compiled.try_emplace( pr.source_path, pr.source_file );
@@ -90,7 +90,7 @@ try {
       for( const auto& inc : pr.tree.header.includes ) {
          auto unquoted_file_name = unquoted_str( *inc.file_name );
          try {
-            auto res = compile_file( unquoted_file_name, compiled, false, os );
+            auto res = compile_file( unquoted_file_name, builtin_overloads, compiled, false, os );
             if( res.has_value( ) ) {
                pr.inclusions.emplace_back( is_public( inc ), std::move( res ).value( ) );
             }
@@ -125,12 +125,39 @@ try {
    throw std::stack<compiler_error>( { compiler_error( path, { err, "Cannot open or read file" } ) } );
 }
 
-void include_builtins( const std::filesystem::path& include_path, std::ostream& os ) {
-   for( const auto& path : std::filesystem::directory_iterator( include_path ) ) {
-      auto buffer = read_file( path );
-      std::remove( buffer.begin( ), buffer.end( ), '\r' );
-      os << buffer.data( ) << "\n";
+auto include_builtins( const std::filesystem::path& include_path, std::ostream& os ) {
+   std::unordered_map<std::string, std::vector<std::size_t>> builtin_overloads;
+   if( !std::filesystem::exists( include_path ) || !std::filesystem::is_directory( include_path ) ) {
+      std::cout << "Warning: Include directory not found in executable directory\n";
+      std::cout << "Not including builtin functions\n.";
    }
+   else {
+      for( const auto& path : std::filesystem::directory_iterator( include_path ) ) {
+         if(path.path().extension() == ".h" || path.path().extension() == ".dat") {
+            auto buffer = read_file( path );
+            std::remove( buffer.begin( ), buffer.end( ), '\r' );
+            if(path.path().extension() == ".h") {
+               os << buffer.data( ) << "\n";
+            }
+            else if(path.path().extension() == ".dat") {
+               for(auto iter = buffer.begin(); iter != buffer.end(); iter = iter != buffer.end() ? std::next(iter) : iter) {
+                  auto sig = std::find(iter,buffer.end(),'\n');
+                  std::istringstream iss(std::string(iter,sig));
+                  std::string name;
+                  if(iss >> name) {
+                     while(!name.starts_with('#') && iss) {
+                        std::size_t arity;
+                        iss >> arity;
+                        builtin_overloads[name].push_back(arity);
+                     }
+                  }
+                  std::swap(iter,sig);
+               }
+            }
+         }
+      }
+   }
+   return builtin_overloads;
 }
 
 int main( int argc, char *argv[] )
@@ -141,13 +168,28 @@ try {
    }
    std::filesystem::path include_path  = std::filesystem::absolute( argv[0] ).parent_path( ) / "include";
    std::filesystem::path source_path   = std::filesystem::absolute( argv[1] );
-   std::filesystem::path compiled_path = std::filesystem::absolute( argv[1] ).replace_extension( ".cpp" );
+   std::filesystem::path destiny_path = std::filesystem::absolute( argv[1] ).replace_extension( ".cpp" );
    //Recopilar el codigo en oss.
    map_path_source compiled;
    std::ostringstream oss;
-   include_builtins( include_path, oss );
-   compile_file( source_path, compiled, true, oss );
+   auto builtin_overloads = include_builtins( include_path, oss );
+   compile_file( source_path, builtin_overloads, compiled, true, oss );
    //Imprimir el codigo fuente en el destino.
+   if( std::filesystem::exists( destiny_path ) && std::filesystem::is_regular_file( destiny_path ) ) {
+      std::string res;
+      std::cout << "Warning: Destiny file: " << destiny_path << " already exists.\n";
+      while(res != "Y" && res != "N") {
+         std::cout << "Overwrite file? [Y/N]\n";
+         std::cin >> res;
+      }
+      if(res == "N") {
+         return 0;
+      }
+   }
+   else if( !std::filesystem::is_regular_file( destiny_path ) ) {
+      std::cout << "Error: Destiny file is not a regular file\n."
+      return 0;
+   }
    std::ofstream ofs( compiled_path.c_str( ) );
    ofs << std::move( oss ).str( );
 } catch( std::stack<compiler_error>& sce ) {
